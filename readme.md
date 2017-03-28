@@ -13,13 +13,7 @@ Table of Contents
 
 Summary
 -------
-Wic is a 2D game engine for Mac OSX written in C++ and distributed as a standalone static library. I am building Wic with the following design goals in mind: 
-* simplicity
-* extensibility
-* robust and easy error reporting
-* detailed documentation
-* library-wide consistency
-* flexibility in memory management
+Wic is a 2D game engine for MacOS written in C++ and distributed as a standalone static library. This is primarily a hobby project, but I hope to make some neat games. 
 
 You can download files, read documentation, and submit bug reports at wic's [github repository](https://github.com/wolearyc/wic). 
 
@@ -79,7 +73,8 @@ Conventions
 Wic aims to be extremely consistent, so it has a number of conventions.
 * wic uses camelCase
 * private members have an underscore suffix
-* function parameters that share a name with a member have an underscore suffix
+* function parameters that share a name with a public member have an underscore suffix
+* public members are only public when they can modified freely and safely. Generally, Wic uses safe, public members (rather than getter/setter methods) in the interest of simplicity and readability.
 
 Licensing and Distribution
 --------------------------

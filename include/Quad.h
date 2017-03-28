@@ -1,5 +1,5 @@
 /* ----------------------------------------------------------------------------
- * wic - a simple 2D game engine for Mac OSX written in C++
+ * wic - a simple 2D game engine for MacOS written in C++
  * Copyright (C) 2013-2017  Willis O'Leary
  *
  * This program is free software: you can redistribute it and/or modify it
@@ -40,11 +40,9 @@ namespace wic
     Quad();
     /** \brief Copy constructor */
     Quad(const Quad& other);
-    /** \brief Gets geometric center of polygon
-     *  \return the geometic center
-     */
-    void draw(Game& game);
-    Pair getGeoCenter();
+    void draw(const Game& game);
+    /** \brief Gets the geometric center of the quad */
+    Pair getGeoCenter() const;
     Pair dimensions;      /**< the dimensions */
   };
 }

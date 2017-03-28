@@ -1,5 +1,5 @@
 /* ----------------------------------------------------------------------------
- * wic - a simple 2D game engine for Mac OSX written in C++
+ * wic - a simple 2D game engine for MacOS written in C++
  * Copyright (C) 2013-2017  Willis O'Leary
  *
  * This program is free software: you can redistribute it and/or modify it
@@ -36,27 +36,26 @@ namespace wic
   {
     friend class Text;
   public:
-    /** \brief initializes a Font from a file
+    /** \brief Constructor
      *  \param filepath the absolute or relative filepath to a TrueType (TTF),
      *         TrueType collection (TTC), Type 1 (PFA and PFB), CID-keyed Type 1,
      *         CFF, OpenType, OpenType collection, SFNT-based bitmap, X11 PCF,
-     *         Windows FNT, BDF, or PFR font file; the file must exist and be one of
-     *         the forementioned formats
-     * \param point the size of the font measured in font points; must be > 0
-     * \param antialias whether or not to antialias the font; antialiased fonts with
-     *        a small point size can be difficult to read
+     *         Windows FNT, BDF, or PFR font file
+     * \param point the point of the font; must be nonzero
+     * \param antialias whether or not to antialias the font. Small, antialiased
+     *        fonts ca be difficult to read
      * \param game the game
-     * \return a valid pointer to a Font on success, null on failure
      */
-    Font(string filepath, unsigned point, bool antialias, Game& game);
+    Font(string filepath, unsigned point, bool antialias, const Game& game);
     /** \brief Default constructor */
     Font();
     ~Font();
   private:
-    FT_Face face_;           /**< the face */
-    Texture** textures_;     /**< the glyph textures */
-    unsigned short point_;   /**< the point size measured in font points */
-    bool antialias_;         /**< whether or not to antialias the font */
+    const static unsigned NumChars = 128;
+    FT_Face face_;
+    Texture textures_[NumChars];
+    unsigned short point_;
+    bool antialias_;
   };
 }
 #endif

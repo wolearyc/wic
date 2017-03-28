@@ -1,5 +1,5 @@
 /* ----------------------------------------------------------------------------
- * wic - a simple 2D game engine for Mac OSX written in C++
+ * wic - a simple 2D game engine for MacOS written in C++
  * Copyright (C) 2013-2017  Willis O'Leary
  *
  * This program is free software: you can redistribute it and/or modify it
@@ -37,7 +37,7 @@ namespace wic
   }
   void errorCallback(int error, const char* description)
   {
-    throw WicError(WIC_ERRNO_GLFW_FAIL);
+    throw Error("glfw encountered an error");
   }
   void focusCallback(GLFWwindow* window, int n)
   {
@@ -92,17 +92,18 @@ namespace wic
   static bool initialized = false;
   Game::Game(string title, Pair dimensions, unsigned fps,
              bool resizeable, bool fullscreen, unsigned samples)
+  : dimensions_(dimensions)
   {
     if(initialized)
-      throw WicError(WIC_ERRNO_ALREADY_INIT);
+      throw Error("a game is already initialized");
     if(dimensions.x < 32)
-      throw WicError(WIC_ERRNO_SMALL_X_DIMENSION);
+      throw InvalidArgument("dimensions.x", "must be greater than 32");
     if(dimensions.y < 32)
-      throw WicError(WIC_ERRNO_SMALL_Y_DIMENSION);
+      throw InvalidArgument("dimensions.y", "must be greater than 32");
     if(!fps)
-      throw WicError(WIC_ERRNO_SMALL_FPS);
+      throw InvalidArgument("fps", "must be nonzero");
     if(!glfwInit())
-      throw WicError(WIC_ERRNO_GLFW_FAIL);
+      throw InternalError("glfw failed to initialize");
     glfwWindowHint(GLFW_REFRESH_RATE, fps);
     glfwWindowHint(GLFW_SAMPLES, samples);
     glfwWindowHint(GLFW_RESIZABLE, resizeable);
@@ -110,7 +111,7 @@ namespace wic
     if(!monitor)
     {
       glfwTerminate();
-      throw WicError(WIC_ERRNO_MONITOR_FAIL);
+      throw InternalError("glfw failed to fetch the primary monitor");
     }
     if(fullscreen)
       window_ = glfwCreateWindow(dimensions.x, dimensions.y, title.data(), monitor,
@@ -120,7 +121,7 @@ namespace wic
     if(!window_)
     {
       glfwTerminate();
-      throw WicError(WIC_ERRNO_WINDOW_FAIL);
+      throw InternalError("window creation failed");
     }
     glfwSetErrorCallback(errorCallback);
     glfwSetWindowFocusCallback(window_, focusCallback);
@@ -139,7 +140,7 @@ namespace wic
     {
       glfwTerminate();
       glfwDestroyWindow(window_);
-      throw WicError(WIC_ERRNO_FREETYPE_FAIL);
+      throw InternalError("freetype could not be initialized");
     }
     int physicalWidth; int physicalHeight;
     glfwGetMonitorPhysicalSize(monitor, &physicalWidth, &physicalHeight);
@@ -152,16 +153,10 @@ namespace wic
     delta_ = 0.0;
     initialized = true;
   }
-  Game::~Game()
+  Game::~Game() 
   {
     glfwDestroyWindow(window_);
     glfwTerminate();
-    
-    window_ = 0;
-    dimensions_ = (Pair) {0,0};
-    secondsPerFrame_ = 0.0;
-    previousTime_ = 0.0;
-    pixelDensity_ = (Pair) {0,0};
     initialized = false;
   }
   unsigned Game::updt()
@@ -184,44 +179,47 @@ namespace wic
     }
     return TERMINATE;
   }
-  bool Game::exit()
+  void Game::exit()
   {
     glfwSetWindowShouldClose(window_, true);
-    return true;
   }
-  double Game::getDelta()
+  double Game::getDelta() const
   {
     return delta_;
   }
-  bool Game::isKeyDown(enum Key key)
+  bool Game::isKeyDown(enum Key key) const
   {
     return downKeys[(int) key];
   }
-  bool Game::isKeyPressed(enum Key key)
+  bool Game::isKeyPressed(enum Key key) const
   {
     return pressedKeys[(int) key];
   }
-  string Game::getInput()
+  string Game::getInput() const
   {
     return input;
   }
-  Pair Game::getCursorLocation(Game* game)
+  Pair Game::getCursorLocation() const
   {
     Pair result = cursorLocation;
-    result.y = game->dimensions_.y - result.y;
+    result.y = dimensions_.y - result.y;
     return result;
   }
-  Pair Game::getScrollOffset()
+  Pair Game::getScrollOffset() const
   {
     return scrollOffset;
   }
-  double Game::getTime()
+  double Game::getTime() const
   {
     return glfwGetTime();
   }
-  Pair Game::getDimensions()
+  Pair Game::getDimensions() const
   {
     return dimensions_;
+  }
+  Pair Game::getPixelDensity() const
+  {
+    return pixelDensity_;
   }
 
   Pair convertLocation(Pair location, Pair dimensions)

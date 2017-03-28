@@ -1,5 +1,5 @@
 /* ----------------------------------------------------------------------------
- * wic - a simple 2D game engine for Mac OSX written in C++
+ * wic - a simple 2D game engine for MacOS written in C++
  * Copyright (C) 2013-2017  Willis O'Leary
  *
  * This program is free software: you can redistribute it and/or modify it
@@ -21,24 +21,35 @@
 #include "Server.h"
 namespace wic
 {
-  static const size_t bufferSize = 256;
-  static uint8_t buffer[bufferSize];
+  static const size_t bufferSize = 256; // Utility buffer size
+  static uint8_t buffer[bufferSize];    // Utility buffer
+  
+  // Utility packets
+  static JoinRequest joinRequest;
+  static JoinResponse joinResponse;
+  static ClientJoined clientJoined;
+  static ClientInfo clientInfo;
+  static Kick kickPkt;
+  static Ban banPkt;
+  static Shutdown shutdown;
+  static ClientLeft clientLeft;
+  static Leaving leaving;
   
   Server::Server(string name, unsigned port, uint8_t maxClients)
   {
     if(name.length() > 20)
-      throw WicError(WIC_ERRNO_LARGE_NAME);
+      throw InvalidArgument("name", "should be less than 20 characters long");
     if(port < 1025)
-      throw WicError(WIC_ERRNO_RESERVED_PORT);
+      throw InvalidArgument("port", "should be > 1024");
     if(maxClients < 1)
-      throw WicError(WIC_ERRNO_SMALL_MAX_CLIENTS);
+      throw InvalidArgument("maxClients", "should be nonzero");
     if(maxClients > 254)
-      throw WicError(WIC_ERRNO_LARGE_MAX_CLIENTS);
+      throw InvalidArgument("maxClients", "should be < 255");
     
     name_ = name;
     socket_ = socket(AF_INET, SOCK_DGRAM, 0);
     if(socket_ == -1)
-      throw WicError(WIC_ERRNO_SOCKET_FAIL);
+      throw InternalError("socket initialization failed");
     fcntl(socket_, F_SETFL, O_NONBLOCK);
     bzero(&addr_, lenAddr_);
     addr_.sin_family = AF_INET;
@@ -49,9 +60,9 @@ namespace wic
     {
       close(socket_);
       if(errno == EADDRINUSE)
-        throw WicError(WIC_ERRNO_PORT_IN_USE);
+        throw Failure("port is already in use");
       else
-        throw WicError(WIC_ERRNO_SOCKET_BIND_FAIL);
+        throw InternalError("socket binding failed");
     }
     maxNodes_ = 1 + maxClients;
     addrs_.reserve(maxNodes_);
@@ -69,30 +80,32 @@ namespace wic
   {
     Shutdown pkt = Shutdown();
     sendAll(pkt);
-    
     close(socket_);
   }
-  void Server::send(Packet& packet, NodeID destID)
+  void Server::send(const Packet& packet, NodeID destID) const
   {
+    if(destID == 0)
+      throw InvalidArgument("destID", "should be nonzero");
     if(destID >= maxNodes_)
-      throw WicError(WIC_ERRNO_IMPOSSIBLE_INDEX);
+      throw InvalidArgument("destID", "destination ID is impossible");
     
     if(used_[destID])
     {
       size_t size = Packet::HEADER_SIZE + packet.size();
-      packet.toBuffer(buffer);
+      packet.toBuffer(buffer, packet.source());
+      // Server doesn't mess with the source
       sendto(socket_, buffer, size, 0,
              (struct sockaddr*) &addrs_[destID], lenAddr_);
     }
     else
-      throw WicError(WIC_ERRNO_INDEX_UNUSED);
+      throw Error("destination ID corresponds with no client");
   }
-  void Server::sendExclude(Packet &packet, NodeID excludeID)
+  void Server::sendExclude(const Packet &packet, NodeID excludeID) const
   {
-    if(excludeID < 1)
-      throw WicError(WIC_ERRNO_NOT_CLIENT_INDEX);
+    if(excludeID  == 0)
+      throw InvalidArgument("excludeID", "should be nonzero");
     if(excludeID >= maxNodes_)
-      throw WicError(WIC_ERRNO_IMPOSSIBLE_INDEX);
+      throw InvalidArgument("excludeID", "should be less than max clients");
     
     for(NodeID i = 1; i < maxNodes_; i++)
     {
@@ -100,7 +113,7 @@ namespace wic
         send(packet, i);
     }
   }
-  void Server::sendAll(Packet& packet)
+  void Server::sendAll(const Packet& packet) const
   {
     for(NodeID i = 1; i < maxNodes_; i++)
     {
@@ -108,34 +121,39 @@ namespace wic
         send(packet, i);
     }
   }
-  void Server::recv(Packet& result)
+  bool Server::recv(MysteryPacket& result)
   {
-    
-    struct sockaddr_in recv_addr;
-    socklen_t len_recv_addr = sizeof(recv_addr);
+    struct sockaddr_in recvAddr;
+    socklen_t tmpLen = sizeof(recvAddr);
     ssize_t length = recvfrom(socket_, buffer, bufferSize, 0,
-                              (struct sockaddr*) &recv_addr, &len_recv_addr);
+                              (struct sockaddr*) &recvAddr, &tmpLen);
     if(length > 0)
     {
       NodeID sourceID;
-      result.fromBuffer(buffer);
-      if(result.type() == JoinRequest::type)
+      result.populate(buffer);
+      
+      // Recieved packet is a join request, so process and return
+      if(result.isType(joinRequest))
       {
-        JoinRequest request = JoinRequest(result);
+        joinRequest.populate(result);
         char ip[INET_ADDRSTRLEN];
-        inet_ntop(AF_INET, &recv_addr.sin_addr, &ip[0], INET_ADDRSTRLEN);
+        inet_ntop(AF_INET, &recvAddr.sin_addr, &ip[0], INET_ADDRSTRLEN);
+        
+        // Search the blacklist. If banned, respond and return.
         for(unsigned i = 0; i < blacklist_.size(); i++)
         {
-          if(blacklist_[i] == string(ip) || blacklist_[i] == request.name())
+          if(blacklist_[i] == string(ip) || blacklist_[i] == joinRequest.name())
           {
-            JoinResponse response = JoinResponse(JoinResponse::BANNED,
-                                                 maxNodes_, 0, name_);
-            size_t size = Packet::HEADER_SIZE + JoinResponse::size;
-            response.toBuffer(buffer);
-            sendto(socket_, buffer, size, 0, (struct sockaddr*) &recv_addr,
+            joinResponse.populate(JoinResponse::BANNED, maxNodes_, 0, name_);
+            size_t size = Packet::HEADER_SIZE + joinResponse.size();
+            joinResponse.toBuffer(buffer, SERVER_ID);
+            sendto(socket_, buffer, size, 0, (struct sockaddr*) &recvAddr,
                    lenAddr_);
+            return true;
           }
         }
+        
+        // Determine connections. If full, respond and return
         uint8_t connections = 0;
         for(NodeID i = 1; i < maxNodes_; i++)
         {
@@ -144,13 +162,15 @@ namespace wic
         }
         if(connections == maxNodes_ - 1)
         {
-          JoinResponse response = JoinResponse(JoinResponse::FULL,
-                                               maxNodes_, 0, name_);
-          size_t size = Packet::HEADER_SIZE + JoinResponse::size;
-          response.toBuffer(buffer);
-          sendto(socket_, buffer, size, 0, (struct sockaddr*) &recv_addr,
+          joinResponse.populate(JoinResponse::FULL, maxNodes_, 0, name_);
+          size_t size = Packet::HEADER_SIZE + joinResponse.size();
+          joinResponse.toBuffer(buffer, SERVER_ID);
+          sendto(socket_, buffer, size, 0, (struct sockaddr*) &recvAddr,
                  lenAddr_);
+          return true;
         }
+        
+        // Join ok. Find a new ID and repond
         NodeID newID;
         for(NodeID i = 0; i < maxNodes_; i++)
         {
@@ -158,62 +178,68 @@ namespace wic
           {
             sourceID = i;
             newID = i;
-            break;
           }
         }
+        joinResponse.populate(JoinResponse::OK, maxNodes_, newID, name_);
+        send(joinResponse, newID);
         
-        JoinResponse response = JoinResponse(JoinResponse::OK,
-                                             maxNodes_, newID, name_);
-        addrs_[newID] = recv_addr;
+        // Setup new connection
+        addrs_[newID] = recvAddr;
         used_[newID] = true;
-        names_[newID] = request.name();
+        names_[newID] = joinRequest.name();
         char tmp[20];
-        inet_ntop(AF_INET, &recv_addr.sin_addr, tmp,INET_ADDRSTRLEN);
+        inet_ntop(AF_INET, &recvAddr.sin_addr, tmp,INET_ADDRSTRLEN);
         ips_[newID] = string(tmp);
-        send(response, newID);
         
-        ClientJoined pkt = ClientJoined(newID, request.name());
-        sendExclude(pkt, newID);
-        result = pkt;
+        // Notify new client of old clients
+        clientJoined.populate(newID, joinRequest.name());
+        sendExclude(clientJoined, newID);
+        result.Packet::populate(clientJoined);
         for(NodeID i = 1; i < maxNodes_; i++)
         {
           if(used_[i])
           {
-            ClientInfo pkt = ClientInfo(i, names_[i]);
-            send(pkt, newID);
+            clientInfo.populate(i, names_[i]);
+            send(clientInfo, newID);
           }
         }
+        return true;
       }
-      sourceID = result.source_;
+      
+      // Other type of packet; verify source
+      sourceID = result.source();
       if(sourceID > 0 && sourceID < maxNodes_ && used_[sourceID] &&
-         recv_addr.sin_addr.s_addr == addrs_[sourceID].sin_addr.s_addr &&
-         recv_addr.sin_port == addrs_[sourceID].sin_port)
+         recvAddr.sin_addr.s_addr == addrs_[sourceID].sin_addr.s_addr &&
+         recvAddr.sin_port == addrs_[sourceID].sin_port)
       {
-        if(result.type() == Leaving::type)
+        // Client left. Notify all clients of exit.
+        if(result.isType(leaving))
         {
-          Packet pkt = ClientLeft(sourceID, ClientLeft::NORMAL, "");
-          sendExclude(pkt, sourceID);
+          clientLeft.populate(sourceID, ClientLeft::NORMAL, "");
+          sendExclude(clientLeft, sourceID);
           used_[sourceID] = false;
         }
+        return true;
       }
-      throw WicError(WIC_ERRNO_PACKET_UNKNOWN_SOURCE);
+      throw Error("packet recieved from unknown source");
     }
+    return false;
   }
   void Server::kick(NodeID ID, string reason)
   {
     if(ID < 1)
-      throw WicError(WIC_ERRNO_NOT_CLIENT_INDEX);
+      throw InvalidArgument("ID", "should be nonzero");
     if(ID >= maxNodes_)
-      throw WicError(WIC_ERRNO_IMPOSSIBLE_INDEX);
+      throw InvalidArgument("ID", "should be less than max clients");
     if(!used_[ID])
-      throw WicError(WIC_ERRNO_INDEX_UNUSED);
+      throw Error("ID corresponds with no client");
     if(reason.length() > 50)
-      throw WicError(WIC_ERRNO_LARGE_REASON);
+      throw InvalidArgument("reason", "should be under 51 characters");
     
-    Packet pkt = Kick(reason);
-    send(pkt, ID);
-    pkt = ClientLeft(ID, ClientLeft::KICKED, reason);
-    sendExclude(pkt, ID);
+    kickPkt.populate(reason);
+    send(kickPkt, ID);
+    clientLeft.populate(ID, ClientLeft::KICKED, reason);
+    sendExclude(clientLeft, ID);
     used_[ID] = false;
   }
   void Server::kick(string nameOrIP, string reason)
@@ -223,33 +249,26 @@ namespace wic
   void Server::ban(NodeID ID)
   {
     if(ID < 1)
-      throw WicError(WIC_ERRNO_NOT_CLIENT_INDEX);
+      throw InvalidArgument("ID", "should be nonzero");
     if(ID >= maxNodes_)
-      throw WicError(WIC_ERRNO_IMPOSSIBLE_INDEX);
+      throw InvalidArgument("ID", "should be less than max clients");
     if(!used_[ID])
-      throw WicError(WIC_ERRNO_INDEX_UNUSED);
+      throw Error("ID corresponds with no client");
     
     blacklist_.push_back(names_[ID]);
-    Packet pkt = Ban("");
-    send(pkt, ID);
-    pkt = ClientLeft(ID, ClientLeft::BANNED, "");
-    sendExclude(pkt, ID);
+    banPkt.populate("");
+    send(banPkt, ID);
+    clientLeft.populate(ID, ClientLeft::BANNED, "");
+    sendExclude(clientLeft, ID);
     used_[ID] = false;
   }
-  
-  
-  
+
   void Server::ban(string nameOrIP)
   {
-    if(nameOrIP.length() > 20)
-      throw WicError(WIC_ERRNO_LARGE_NAME_OR_IP);
     blacklist_.push_back(nameOrIP);
   }
   void Server::unban(string nameOrIP)
   {
-    if(nameOrIP.length() > 20)
-      throw WicError(WIC_ERRNO_LARGE_NAME_OR_IP);
-    
     for(unsigned i = 0; i < blacklist_.size(); i++)
     {
       if(nameOrIP == blacklist_[i])
@@ -258,18 +277,16 @@ namespace wic
         i--;
       }
     }
-    throw WicError(WIC_ERRNO_UNBANNED_NAME_OR_IP);
+    throw Error("no blacklist entry for nameOrIP");
   }
-  NodeID Server::getID(string nameOrIP)
+  NodeID Server::getID(string nameOrIP) const
   {
-    if(nameOrIP.length() > 20)
-      throw WicError(WIC_ERRNO_LARGE_NAME_OR_IP);
-    
+
     for(unsigned i = 0; i < maxNodes_; i++)
     {
       if(used_[i] && (nameOrIP == names_[i] || nameOrIP == ips_[i]))
         return i;
     }
-    throw WicError(WIC_ERRNO_NO_SUCH_CLIENT);
+    throw Error("nameOrIP corresponds to no client");
   }
 }

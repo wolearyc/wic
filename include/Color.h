@@ -1,5 +1,5 @@
 /* ----------------------------------------------------------------------------
- * wic - a simple 2D game engine for Mac OSX written in C++
+ * wic - a simple 2D game engine for MacOS written in C++
  * Copyright (C) 2013-2017  Willis O'Leary
  *
  * This program is free software: you can redistribute it and/or modify it
@@ -32,55 +32,52 @@ namespace wic
    *  component, a value of 255 indicates complete opacity while a value of 0
    *  indicates complete transparency.
    *
-   *  Color contains some common pre-defined colors, stored as static
-   *  variables.
+   *  Color contains some common pre-defined colors that can be accessed
+   *  as static variables.
    */
   class Color
   {
   public:
-    const static Color White;   /**< white (255,255,255) */
-    const static Color Silver;  /**< silver (208,208,208) */
-    const static Color Gray;    /**< gray (128,128,128) */
-    const static Color Black;   /**< black (0,0,0) */
-    const static Color Red;     /**< red (255,0,0) */
-    const static Color Maroon;  /**< maroon (128,0,0) */
-    const static Color Yellow;  /**< yellow (255,255,0) */
-    const static Color Orange;  /**< orange (255,165,0) */
-    const static Color Olive;   /**< olive (128,128,0) */
-    const static Color Lime;    /**< lime (0,255,0) */
-    const static Color Green;   /**< green (0,128,0) */
-    const static Color Aqua;    /**< aqua (0,255,255) */
-    const static Color Teal;    /**< teal (0,128,128) */
-    const static Color Blue;    /**< blue (0,0,255) */
-    const static Color Navy;    /**< navy (0,0,128) */
-    const static Color Fuchsia; /**< fuschsia (255,0,255) */
-    const static Color Purple;  /**< purple (128,0,128) */
-    /** \brief constructs  a Color based on red, green, blue, and alpha
-     *        components
+    const static Color White;     /**< \brief white (255,255,255) */
+    const static Color Silver;    /**< \brief silver (208,208,208) */
+    const static Color Gray;      /**< \brief gray (128,128,128) */
+    const static Color Black;     /**< \brief black (0,0,0) */
+    const static Color Red;       /**< \brief red (255,0,0) */
+    const static Color Maroon;    /**< \brief maroon (128,0,0) */
+    const static Color Yellow;    /**< \brief yellow (255,255,0) */
+    const static Color Orange;    /**< \brief orange (255,165,0) */
+    const static Color Olive;     /**< \brief olive (128,128,0) */
+    const static Color Lime;      /**< \brief lime (0,255,0) */
+    const static Color Green;     /**< \brief green (0,128,0) */
+    const static Color Aqua;      /**< \brief aqua (0,255,255) */
+    const static Color Teal;      /**< \brief teal (0,128,128) */
+    const static Color Blue;      /**< \brief blue (0,0,255) */
+    const static Color Navy;      /**< \brief navy (0,0,128) */
+    const static Color Fuchsia;   /**< \brief fuschsia (255,0,255) */
+    const static Color Purple;    /**< \brief purple (128,0,128) */
+    const static Color WicOrange; /**< \brief Wic's standard orange */
+    const static Color WicGray;   /**< \brief Wic's standard gray */
+    /** \brief Constructor
      *  \param red_ the red component
      *  \param green_ the green component
      *  \param blue_ the blue component
      *  \param alpha_ the alpha component
      */
     Color(uint8_t red_, uint8_t green_, uint8_t blue_, uint8_t alpha_);
-    /** \brief constructs a completely opaque Color based on red, green, and
-     *        blue components
+    /** \brief Constructor (opaque)
      *  \param red_ the red component
      *  \param green_ the green component
      *  \param blue_ the blue component
      */
     Color(uint8_t red_, uint8_t green_, uint8_t blue_);
-    /** \brief constructs a Color representing white (255,255,255)
-     */
+    /** \brief Default constructor (white) */
     Color();
-    /** \brief constructs a Color identical to another
-     *  \param other another Color
-     */
+    /** \brief Copy constructor */
     Color(const Color& other);
-    uint8_t red;
-    uint8_t green;
-    uint8_t blue;
-    uint8_t alpha;
+    uint8_t red;    /**< \brief the red component */
+    uint8_t green;  /**< \brief the green component */
+    uint8_t blue;   /**< \brief the blue component */
+    uint8_t alpha;  /**< \brief the alpha component */
   };
 }
 #endif

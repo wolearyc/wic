@@ -1,5 +1,5 @@
 /* ----------------------------------------------------------------------------
- * wic - a simple 2D game engine for Mac OSX written in C++
+ * wic - a simple 2D game engine for MacOS written in C++
  * Copyright (C) 2013-2017  Willis O'Leary
  *
  * This program is free software: you can redistribute it and/or modify it
@@ -21,52 +21,49 @@
 /** \file */
 #ifndef PAIR_H
 #define PAIR_H
-#include <math.h>
+#include <cmath>
 namespace wic
 {
   /** \brief holds an x and a y double precision floating point value
    *
    *  Pair is the workhorse of wic. A Pair can represent 2D dimensions, a 2D
-   *  vector, 2D scaling information, and, most commonly, coordinates.
+   *  vector, 2D scaling information, and, most commonly, coordinates. Typical
+   *  vector arithmetic can be performed between pairs.
    */
   class Pair
   {
   public:
-    double x; /**< the x coordinate/x dimension/x component etc. */
-    double y; /**< the y coordinate/y dimension/y component etc. */
-    /** \brief constructs a Pair based on two doubles
+    double x; /**< \brief the x coordinate/x dimension/x component etc. */
+    double y; /**< \brief the y coordinate/y dimension/y component etc. */
+    /** \brief Constructor
      * \param x_ the desired x coordinate/x dimension/x component etc.
      * \param y_ the desired y coordinate/y dimension/y component etc.
      */
     Pair(double x_, double y_);
-    /** \brief constructs a Pair based on two ints
+    /** \brief Constructor
      * \param x_ the desired x coordinate/x dimension/x component etc.
      * \param y_ the desired y coordinate/y dimension/y component etc.
      */
     Pair(int x_, int y_);
-    /** \brief constructs a Pair with x coordinate/x dimension/x component 0
-     *        and y coordinate/y dimension/y component 0
-     */
+    /** \brief Default constructor {0,0} */
     Pair();
-    /** \brief constructs a Pair identical to another
-     * \param other another Pair
-     */
+    /** \brief Copy constructor */
     Pair(const Pair& other);
     /** \brief computes the distance to another Pair
      * \param other another Pair
      * \return the distance between the Pairs, in whatever units the Pairs
      *         used
      */
-    double distance(const Pair& other);
+    double distance(const Pair& other) const;
     /** \brief computes the angle to another Pair
      * \param other another Pair
      * \return the angle, in radians measured from the positive x axis
      */
-    double angle(const Pair& other);
+    double angle(const Pair& other) const;
     /** \brief computes the norm
      *  \return the norm of the Pair
      */
-    double norm();
+    double norm() const;
     /** \brief transforms the pair based on a rotation, scale, and center
      *  \param rotation the rotation
      *  \param scale the scale
@@ -118,7 +115,7 @@ namespace wic
      * \return true if both Pairs' respective components are within epsilon
      *         (0.0000001), false otherwise
      */
-    bool operator==(const Pair& other);
+    bool operator==(const Pair& other) const;
     /** \brief defines the inequality operator between Pairs
      * \param other another Pair
      * \return false if both Pairs' respective components are within
@@ -130,25 +127,25 @@ namespace wic
      * \return true if the Pair's respective components are both greater
      *         than or equal to the components of the other Pair
      */
-    bool operator>=(const Pair& other);
+    bool operator>=(const Pair& other) const;
     /** \brief defines the greater than operator between Pairs
      * \param other another Pair
      * \return true if the Pair's respective components are both greater
      *         than to the components of the other Pair
      */
-    bool operator>(const Pair& other);
+    bool operator>(const Pair& other) const;
     /** \brief defines the less than or equal to operator between Pairs
      * \param other another Pair
      * \return true if the Pair's respective components are both less than
      *         or equal to the components of the other Pair
      */
-    bool operator<=(const Pair& other);
+    bool operator<=(const Pair& other) const;
     /** \brief defines the less than operator between Pairs
      * \param other another Pair
      * \return true if the Pair's respective components are both greater
      *         than or equal to the components of the other Pair
      */
-    bool operator<(const Pair& other);
+    bool operator<(const Pair& other) const;
     /** \brief defines addition between a Pair and a double
      * \param i a double
      * \return the Pair with the double added to both components

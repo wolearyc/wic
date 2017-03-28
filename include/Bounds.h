@@ -1,5 +1,5 @@
 /* ----------------------------------------------------------------------------
- * wic - a simple 2D game engine for Mac OSX written in C++
+ * wic - a simple 2D game engine for MacOS written in C++
  * Copyright (C) 2013-2017  Willis O'Leary
  *
  * This program is free software: you can redistribute it and/or modify it
@@ -26,46 +26,36 @@ namespace wic
 {
   /** \brief a bounding rectangle, consisting of a lower left and an upper right
    *         coordinate
-   *
-   *  With an Image, the lower left coordinate defines what part of the Image to
-   *  draw at the lower left, while the upper right coordinate defines what part
-   *  of the Image to draw at the upper right. This mechanism can be used to
-   *  flip the Image along some axis.
    */
   class Bounds
   {
   public:
-    /** \brief constructs a Bounds object based on two coordinates
+    /** \brief Constructor
      *  \param lowerLeft_ the desired lower-left coordinate
      *  \param upperRight_ the desired upper-right coordinate
      */
     Bounds(Pair lowerLeft_, Pair upperRight_);
-    /** \brief constructs a Bounds object based on the components of two
-     *        coordinates
+    /** \brief Constructor
      *  \param lowerLeftX the desired x value of the lower-left coordinate
      *  \param lowerLeftY the desired y value of the lower-left coordinate
      *  \param upperRightX the desired x value of the upper-right coordinate
      *  \param upperRightY the desired y value of the upper-right coordinate
      */
-    Bounds(int lowerLeftX, int lowerLeftY, int upperRightX, int upperRightY);
-    /** \brief constructs a Bounds object based on a base location and
-     *        dimensions
+    Bounds(int lowerLeftX, int lowerLeftY,
+           int upperRightX, int upperRightY);
+    /** \brief Constructor
      *  \param location the desired location of the lower-left coordinate
      *         relative to whatever the Bounds is bounding
      *  \xDimension the desired width from the lower-left coordinate
      *  \yDimension the desired height from the lower-left coordinate
      */
     Bounds(Pair location, int xDimension, int yDimension);
-    /** \brief constructs a Bounds object with a lower-left coordinate of
-     *         (0,0) and an upper-right coordinate of (32,32)
-     */
+    /** \brief Default constructor */
     Bounds();
-    /** \brief contructs a Bounds object identical to another
-     *  \param other another Bounds object
-     */
+    /** \brief Copy constructor */
     Bounds(const Bounds& other);
-    Pair lowerLeft;  /**< lower left coordinate */
-    Pair upperRight; /**< upper right coordinate */
+    Pair lowerLeft;  /**< \brief lower left coordinate */
+    Pair upperRight; /**< \brief upper right coordinate */
   };
   
 }

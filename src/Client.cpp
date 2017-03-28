@@ -1,5 +1,5 @@
 /* ----------------------------------------------------------------------------
- * wic - a simple 2D game engine for Mac OSX written in C++
+ * wic - a simple 2D game engine for MacOS written in C++
  * Copyright (C) 2013-2017  Willis O'Leary
  *
  * This program is free software: you can redistribute it and/or modify it
@@ -23,36 +23,35 @@ namespace wic
 {
   static const size_t bufferSize = 256; // utility buffer size
   static uint8_t buffer[bufferSize];    // utility buffer
-  Client::Client(string name)
-  : Client()
-  {
-    if(name.length() > 20)
-      throw WicError(WIC_ERRNO_LARGE_NAME);
-    name_ = name;
-  }
-  Client::Client()
+  
+  // Utility packets
+  static JoinResponse joinResponse;
+  static ClientJoined clientJoined;
+  static ClientInfo clientInfo;
+  static Kick kick;
+  static Ban ban;
+  static Shutdown shutdown;
+  static ClientLeft clientLeft;
+  
+  Client::Client(string name, unsigned serverPort, string serverIP,
+                 double timeout)
   : joined_(false), ID_(0), name_(""), maxNodes_(0), socket_(0),
     lenAddr_(sizeof(sockaddr_in))
   {
+    if(name.length() > 20)
+      throw InvalidArgument("name", "limited to 20 characters");
+    name_ = name;
+    
+    if(serverPort < 1025)
+      throw InvalidArgument("port", "only ports above 1024 are allowed");
+    
     bzero(&addr_, sizeof(addr_));
     bzero(&serverAddr_, sizeof(serverAddr_));
-  }
-  Client::~Client()
-  {
-    close(socket_);
-  }
-  Packet Client::join(unsigned port, string ip, double timeout)
-  {
-    if(port < 1025)
-      throw WicError(WIC_ERRNO_RESERVED_PORT);
-    if(ip.length() < 7)
-      throw WicError(WIC_ERRNO_SMALL_LEN_SERVER_IP);
-    if(joined_)
-      throw WicError(WIC_ERRNO_CLIENT_ALREADY_JOINED);
-    
+
+    // Bind socket
     socket_ = socket(AF_INET, SOCK_DGRAM, 0);
     if(socket_ == -1)
-      throw WicError(WIC_ERRNO_SOCKET_FAIL);
+      throw InternalError("socket initialization failed");
     fcntl(socket_, F_SETFL, O_NONBLOCK);
     addr_.sin_family = AF_INET;
     addr_.sin_addr.s_addr = htonl(INADDR_ANY);
@@ -62,110 +61,124 @@ namespace wic
     {
       close(socket_);
       if(errno == EADDRINUSE)
-        throw WicError(WIC_ERRNO_PORT_IN_USE);
+        throw Failure("port is already in use");
       else
-        throw WicError(WIC_ERRNO_SOCKET_BIND_FAIL);
+        throw InternalError("socket bind failed");
     }
+    
+    // Initialize server address
     serverAddr_.sin_family = AF_INET;
-    serverAddr_.sin_addr.s_addr = inet_addr(ip.data());
-    serverAddr_.sin_port = htons(port);
+    serverAddr_.sin_addr.s_addr = inet_addr(serverIP.data());
+    serverAddr_.sin_port = htons(serverPort);
     
-    Packet packet = JoinRequest(name_);
-    send(packet);
+    // Send a join request
+    JoinRequest pkt;
+    pkt.populate(name_);
+    send(pkt);
     
+    // Wait for, then process, the server's response
     clock_t initial_clock = clock();
     while((clock() - initial_clock)/CLOCKS_PER_SEC <= timeout)
     {
-      struct sockaddr_in recv_addr;
-      socklen_t tmp_len = sizeof(recv_addr);
+      struct sockaddr_in recvAddr;
+      socklen_t tmpLen = sizeof(recvAddr);
       ssize_t length = recvfrom(socket_, buffer, bufferSize, 0,
-                                (struct sockaddr*) &recv_addr, &tmp_len);
+                                (struct sockaddr*) &recvAddr, &tmpLen);
+      // Process anything recieved
       if(length > 0)
       {
-        packet = Packet(buffer);
-        if(packet.type() == JoinResponse::type)
+        // Populate a mystery packet
+        MysteryPacket pkt;
+        pkt.populate(buffer);
+        
+        if(pkt.isType(joinResponse))
         {
-          JoinResponse response = JoinResponse(packet);
-          if(response.joined())
+          // Process the recieved join response
+          joinResponse.populate(pkt);
+          if(joinResponse.ok())
           {
-            maxNodes_ = response.numNodes();
+            // Join successful, set everything up
+            joined_ = true;
+            ID_ = joinResponse.assignedID();
+            maxNodes_ = joinResponse.maxNodes();
             used_ = vector<bool>(maxNodes_, false);
             used_[0] = true;
-            names_ = vector<string>(maxNodes_, "");
-            serverAddr_ = recv_addr;
-            joined_ = true;
-            ID_ = response.assignedID();
             used_[ID_] = true;
-            names_[0] = response.serverName();
+            names_.resize(maxNodes_);
+            names_[0] = joinResponse.serverName();
             names_[ID_] = name_;
-            return response;
+            serverAddr_ = recvAddr;
+            return;
           }
-          else if(response.full())
-            throw WicError(WIC_ERRNO_JOIN_FAIL_FULL);
-          else if(response.banned())
-            throw WicError(WIC_ERRNO_JOIN_FAIL_BANNED);
+          else if(joinResponse.full())
+            throw Failure("server full");
+          else if(joinResponse.banned())
+            throw Failure("banned");
         }
       }
     }
-    throw WicError(WIC_ERRNO_TIMEOUT);
+    throw Failure("timeout");
   }
-  
-  void Client::send(Packet& packet)
+  Client::~Client() 
   {
-    packet.source_ = ID_;
+    Leaving pkt = Leaving();
+    send(pkt);
+    joined_ = false;
+    close(socket_);
+  }
+  void Client::send(const Packet& packet) const
+  {
     size_t size = Packet::HEADER_SIZE + packet.size();
-    packet.toBuffer(buffer);
+    packet.toBuffer(buffer, ID_);
     sendto(socket_, buffer, size, 0, (struct sockaddr*) &serverAddr_, lenAddr_);
   }
-  void Client::recv(Packet& result)
+  bool Client::recv(MysteryPacket& result)
   {
-    if(!joined_)
-      throw WicError(WIC_ERRNO_CLIENT_NOT_JOINED);
-    
-    struct sockaddr_in recv_addr;
-    socklen_t tmp_len = sizeof(recv_addr);
+    // Pull data from the socket
+    struct sockaddr_in recvAddr;
+    socklen_t tmpLen = sizeof(recvAddr);
     ssize_t length = recvfrom(socket_, buffer, bufferSize, 0,
-                              (struct sockaddr*) &recv_addr, &tmp_len);
+                              (struct sockaddr*) &recvAddr, &tmpLen);
     if(length > 0)
     {
-      if(recv_addr.sin_addr.s_addr == serverAddr_.sin_addr.s_addr &&
-         recv_addr.sin_port == serverAddr_.sin_port)
+      // Verify data comes from server and populate a mystery packet
+      if(recvAddr.sin_addr.s_addr == serverAddr_.sin_addr.s_addr &&
+         recvAddr.sin_port == serverAddr_.sin_port)
       {
-        result.fromBuffer(buffer);
-        if(result.type() == ClientJoined::type)
+        result.populate(buffer);
+        
+        // Characterize and process the mystery packet
+        if(result.isType(clientJoined))
         {
-          ClientJoined tmp = ClientJoined(result);
-          used_[tmp.newID()] = true;
-          names_[tmp.newID()] = tmp.newName();
+          clientJoined.populate(result);
+          used_[clientJoined.newID()] = true;
+          names_[clientJoined.newID()] = clientJoined.newName();
         }
-        else if(result.type() == ClientInfo::type)
+        else if(result.isType(clientInfo))
         {
-          ClientInfo tmp = ClientInfo(result);
-          used_[tmp.ID()] = true;
-          names_[tmp.ID()] = tmp.name();
+          clientInfo.populate(result);
+          used_[clientInfo.ID()] = true;
+          names_[clientInfo.ID()] = clientInfo.name();
         }
-        else if(result.type() == Kick::type ||
-                result.type() == Ban::type  ||
-                result.type() == Shutdown::type)
+        else if(result.isType(kick) ||
+                result.isType(ban)  ||
+                result.isType(shutdown))
         {
           joined_ = false;
         }
-        else if(result.type() == ClientLeft::type)
+        else if(result.isType(clientLeft))
         {
-          ClientLeft tmp = ClientLeft(result);
-          used_[tmp.oldID()] = false;
+          clientLeft.populate(result);
+          used_[clientLeft.oldID()] = false;
         }
+        return true;
       }
-      throw WicError(WIC_ERRNO_PACKET_UNKNOWN_SOURCE);
+      throw Error("packet recieved from unknown source");
     }
+    return false;
   }
-  void Client::leave()
+  NodeID Client::ID() const
   {
-    if(!joined_)
-      throw WicError(WIC_ERRNO_CLIENT_NOT_JOINED);
-    
-    Packet packet = Leaving();
-    send(packet);
-    joined_ = false;
+    return ID_;
   }
 }

@@ -1,5 +1,5 @@
 /* ----------------------------------------------------------------------------
- * wic - a simple 2D game engine for Mac OSX written in C++
+ * wic - a simple 2D game engine for MacOS written in C++
  * Copyright (C) 2013-2017  Willis O'Leary
  *
  * This program is free software: you can redistribute it and/or modify it
@@ -21,7 +21,7 @@
 #include "Image.h"
 namespace wic
 {
-  Image::Image(Pair location_, Texture* texture_)
+  Image::Image(Pair location_, const Texture* texture_)
   : Locateable(location_), Rotateable(), Scaleable(), Colorable(),
     Drawable(), Bounded(Bounds(Pair(), texture_->getDimensions())),
     texture(texture_)
@@ -37,15 +37,15 @@ namespace wic
     Drawable(other), Bounded(other), texture(other.texture)
   {
   }
-  Pair Image::getGeoCenter()
+  Pair Image::getGeoCenter() const
   {
     Pair diagonal = bounds.upperRight - bounds.lowerLeft;
     return diagonal / Pair(2,2);
   }
-  void Image::draw(Game& game)
+  void Image::draw(const Game& game)
   {
-    Pair window_dimensions = game.getDimensions();
-    Pair tex_dimensions = texture->getDimensions();
+    Pair windowDimensions = game.getDimensions();
+    Pair textureDimensions = texture->getDimensions();
     glBindTexture(GL_TEXTURE_2D, texture->data_);
     glColor4ub(color.red, color.green, color.blue,
                color.alpha);
@@ -53,41 +53,40 @@ namespace wic
     glBegin(GL_QUADS);
     
     /* lower left corner */
-    Pair vertex = {0,0};
+    Pair vertex(0,0);
     vertex.transform(rotation, scale, center);
     if(!drawCentered)
-      vertex = vertex + center;
-    vertex = convertLocation(vertex+location, window_dimensions);
-    glTexCoord2f(bounds.lowerLeft.x / tex_dimensions.x,
-                 bounds.lowerLeft.y / tex_dimensions.y);
+      vertex += center;
+    vertex = convertLocation(vertex+location, windowDimensions);
+    glTexCoord2f(bounds.lowerLeft.x / textureDimensions.x,
+                 bounds.lowerLeft.y / textureDimensions.y);
     glVertex2d(vertex.x, vertex.y);
     /* lower right corner */
     vertex = Pair(bounds.upperRight.x - bounds.lowerLeft.x, 0.0);
-    
     vertex.transform(rotation, scale, center);
     if(!drawCentered)
-      vertex = vertex + center;
-    vertex = convertLocation(vertex+location, window_dimensions);
-    glTexCoord2f(bounds.upperRight.x / tex_dimensions.x,
-                 bounds.lowerLeft.y / tex_dimensions.y);
+      vertex += center;
+    vertex = convertLocation(vertex+location, windowDimensions);
+    glTexCoord2f(bounds.upperRight.x / textureDimensions.x,
+                 bounds.lowerLeft.y / textureDimensions.y);
     glVertex2d(vertex.x, vertex.y);
     /* upper right corner */
     vertex = bounds.upperRight-bounds.lowerLeft;
     vertex.transform(rotation, scale, center);
     if(!drawCentered)
-      vertex = vertex + center;
-    vertex = convertLocation(vertex+location, window_dimensions);
-    glTexCoord2f(bounds.upperRight.x / tex_dimensions.x,
-                 bounds.upperRight.y / tex_dimensions.y);
+      vertex += center;
+    vertex = convertLocation(vertex+location, windowDimensions);
+    glTexCoord2f(bounds.upperRight.x / textureDimensions.x,
+                 bounds.upperRight.y / textureDimensions.y);
     glVertex2d(vertex.x, vertex.y);
     /* upper left corner */
     vertex = Pair(0.0, bounds.upperRight.y - bounds.lowerLeft.y);
-    vertex.transform(rotation, scale,center);
+    vertex.transform(rotation, scale, center);
     if(!drawCentered)
-      vertex = vertex + center;
-    vertex = convertLocation(vertex+location, window_dimensions); 
-    glTexCoord2f(bounds.lowerLeft.x / tex_dimensions.x,
-                 bounds.upperRight.y / tex_dimensions.y);
+      vertex += center;
+    vertex = convertLocation(vertex+location, windowDimensions); 
+    glTexCoord2f(bounds.lowerLeft.x / textureDimensions.x,
+                 bounds.upperRight.y / textureDimensions.y);
     glVertex2d(vertex.x, vertex.y);
     
     glEnd();

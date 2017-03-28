@@ -1,5 +1,5 @@
 /* ----------------------------------------------------------------------------
- * wic - a simple 2D game engine for Mac OSX written in C++
+ * wic - a simple 2D game engine for MacOS written in C++
  * Copyright (C) 2013-2017  Willis O'Leary
  *
  * This program is free software: you can redistribute it and/or modify it
@@ -28,7 +28,7 @@ namespace wic
     setVertices(vertices);
   }
   Polygon::Polygon()
-  : Polygon(Pair(), {Pair(), Pair(), Pair()}, Color::White)
+  : Polygon(Pair(), {Pair(), Pair(50,50), Pair(50,0)}, Color::White)
   {
   }
   Polygon::Polygon(const Polygon& other)
@@ -39,11 +39,11 @@ namespace wic
   void Polygon::setVertices(vector<Pair> vertices)
   {
     if(vertices.size() < 3)
-      throw WicError(WIC_ERRNO_SMALL_NUM_VERTICES);
+      throw InvalidArgument("vertices", "must contain more than 2 vertices");
     vertices_ = vertices;
   }
-  vector<Pair> Polygon::getVertices() { return vertices_; };
-  Pair Polygon::getGeoCenter()
+  vector<Pair> Polygon::getVertices() const { return vertices_; };
+  Pair Polygon::getGeoCenter() const
   {
     Pair result = Pair();
     for(unsigned i = 0; i < vertices_.size(); i++)
@@ -51,24 +51,22 @@ namespace wic
     result /= vertices_.size();
     return result;
   }
-  void Polygon::draw(Game& game)
+  void Polygon::draw(const Game& game)
   {
     double cosine = cos(rotation);
     double sine = sin(rotation);
-    glColor4ub(color.red, color.green, color.blue,
-               color.alpha);
+    glColor4ub(color.red, color.green, color.blue, color.alpha);
     glBegin(GL_POLYGON);
     for(unsigned i = 0; i < vertices_.size(); i++)
     {
       Pair vertex = vertices_[i];
-      vertex = vertex - center;
-      vertex = vertex * scale;
+      vertex -= center;
+      vertex *= scale;
       double x = vertex.x * cosine - vertex.y * sine;
       double y = vertex.x * sine + vertex.y * cosine;
-      vertex.x = x;
-      vertex.y = y;
+      vertex = Pair(x,y);
       if(!drawCentered)
-        vertex = vertex + center;
+        vertex += center;
       vertex = convertLocation(vertex+location, game.getDimensions());
       glVertex2d(vertex.x, vertex.y);
     }

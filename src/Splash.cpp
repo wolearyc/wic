@@ -1,5 +1,5 @@
 /* ----------------------------------------------------------------------------
- * wic - a simple 2D game engine for Mac OSX written in C++
+ * wic - a simple 2D game engine for MacOS written in C++
  * Copyright (C) 2013-2017  Willis O'Leary
  *
  * This program is free software: you can redistribute it and/or modify it
@@ -22,21 +22,18 @@
 #include "Splash.h"
 namespace wic
 {
-  const Color SPLASH_backgroundColor = {63,63,63,255};
-  const Color SPLASH_textColor = {253,144,11,255};
-
   void drawSplash(Color backgroundColor, Color textColor, Game& game)
   {
     
     backgroundColor.alpha = 0;
     textColor.alpha = 0;
     
-    Quad background = Quad(Pair(), game.getDimensions(), backgroundColor);
+    Quad background(Pair(), game.getDimensions(), backgroundColor);
 
     double min_dim = fmin(game.getDimensions().x, game.getDimensions().y);
-    Pair scale_multiplier = Pair(min_dim, min_dim) / Pair(500,500);
+    Pair scaleMultiplier = Pair(min_dim, min_dim) / Pair(500,500);
     
-    unsigned char wic_buffer[] =
+    unsigned char wicBuffer[] =
     {
       1,0,0,0,1,0,1,0,0,1,1,1,
       1,0,0,0,1,0,1,0,1,0,0,0,
@@ -44,18 +41,17 @@ namespace wic
       1,1,0,1,1,0,1,0,1,0,0,0,
       1,0,0,0,1,0,1,0,0,1,1,1
     };
-    Texture wic_texture = Texture(wic_buffer, Pair(12,5),
-                                  WIC_MONO, WIC_NEAREST, WIC_REPEAT);
+    Texture wicTexture(wicBuffer, Pair(12,5), Format::Mono, Filter::Nearest,
+                       Wrap::Repeat);
     
-
     Pair location = game.getDimensions() / 2;
-    Image wic = Image(location, &wic_texture);
+    Image wic(location, &wicTexture);
     
-    wic.scale = Pair(10,10) * scale_multiplier;
+    wic.scale = Pair(10,10) * scaleMultiplier;
     wic.center = wic.getGeoCenter();
     wic.drawCentered = true;
     wic.color = textColor;
-    unsigned char engine_buffer[] =
+    unsigned char engineBuffer[] =
     {
       1,1,1,0,1,0,0,1,0,0,1,1,0,1,0,1,0,0,1,0,1,1,1,
       1,0,0,0,1,1,0,1,0,1,0,0,0,1,0,1,1,0,1,0,1,0,0,
@@ -63,23 +59,21 @@ namespace wic
       1,0,0,0,1,0,0,1,0,1,0,1,0,1,0,1,0,0,1,0,1,0,0,
       1,1,1,0,1,0,0,1,0,0,1,1,0,1,0,1,0,0,1,0,1,1,1
     };
-    Texture engine_texture = Texture(engine_buffer, Pair(23,5),
-                                                           WIC_MONO,
-                                                           WIC_NEAREST,
-                                                           WIC_REPEAT);
+    Texture engineTexture(engineBuffer, Pair(23,5),Format::Mono, Filter::Nearest,
+                          Wrap::Repeat);
 
     
-    location.x += wic.scale.x * wic_texture.getDimensions().x / 2;
-    location.y -= wic.scale.y * (wic_texture.getDimensions().y / 2 + 1);
+    location.x += wic.scale.x * wicTexture.getDimensions().x / 2;
+    location.y -= wic.scale.y * (wicTexture.getDimensions().y / 2 + 1);
     location = Pair((int) location.x, (int) location.y);
-    Image engine = Image(location, &engine_texture);
+    Image engine = Image(location, &engineTexture);
 
-    engine.scale = Pair(2,2) * scale_multiplier;
+    engine.scale = Pair(2,2) * scaleMultiplier;
     engine.center = engine.getGeoCenter();
     engine.center.x *= 2;
     engine.drawCentered = true;
     engine.color = textColor;
-    unsigned char version_buffer[] =
+    unsigned char versionBuffer[] =
     {
       0,0,0,1,1,0,0,1,1,
       0,0,0,0,1,0,0,0,1,
@@ -87,17 +81,15 @@ namespace wic
       1,0,1,0,1,0,0,0,1,
       0,1,0,0,1,0,1,0,1,
     };
-    Texture version_texture = Texture(version_buffer, Pair(9,5),
-                                                            WIC_MONO,
-                                                            WIC_NEAREST,
-                                                            WIC_REPEAT);
+    Texture versionTexture(versionBuffer, Pair(9,5), Format::Mono,
+                           Filter::Nearest, Wrap::Repeat);
 
     
-    location.y -= engine.scale.y * (engine_texture.getDimensions().y / 2 + 1);
+    location.y -= engine.scale.y * (engineTexture.getDimensions().y / 2 + 1);
     location.y = (int) location.y;
-    Image version = Image(location, &version_texture);
+    Image version = Image(location, &versionTexture);
 
-    version.scale = Pair(1.5,1.5) * scale_multiplier;
+    version.scale = Pair(1.5,1.5) * scaleMultiplier;
     version.center = version.getGeoCenter();
     version.center.x *= 2;
     version.center.y *= 2;

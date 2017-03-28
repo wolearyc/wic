@@ -1,5 +1,5 @@
 /* ----------------------------------------------------------------------------
- * wic - a simple 2D game engine for Mac OSX written in C++
+ * wic - a simple 2D game engine for MacOS written in C++
  * Copyright (C) 2013-2017  Willis O'Leary
  *
  * This program is free software: you can redistribute it and/or modify it
@@ -36,11 +36,11 @@ namespace wic
     Drawable(other), dimensions(other.dimensions)
   {
   }
-  Pair Quad::getGeoCenter()
+  Pair Quad::getGeoCenter() const
   {
     return dimensions / 2;
   }
-  void Quad::draw(Game &game)
+  void Quad::draw(const Game& game)
   {
     double cosine = cos(rotation);
     double sine = sin(rotation);
@@ -52,14 +52,13 @@ namespace wic
     for(unsigned i = 0; i < 4; i++)
     {
       Pair vertex = vertices[i];
-      vertex = vertex - center;
-      vertex = vertex * scale;
+      vertex -= center;
+      vertex *= scale;
       double x = vertex.x * cosine - vertex.y * sine;
       double y = vertex.x * sine + vertex.y * cosine;
-      vertex.x = x;
-      vertex.y = y;
+      vertex = Pair(x,y);
       if(!drawCentered)
-        vertex = vertex + center;
+        vertex += center;
       vertex = convertLocation(vertex+location, game.getDimensions());
       glVertex2d(vertex.x, vertex.y);
     }

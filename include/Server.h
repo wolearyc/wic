@@ -1,5 +1,5 @@
 /* ----------------------------------------------------------------------------
- * wic - a simple 2D game engine for Mac OSX written in C++
+ * wic - a simple 2D game engine for MacOS written in C++
  * Copyright (C) 2013-2017  Willis O'Leary
  *
  * This program is free software: you can redistribute it and/or modify it
@@ -29,70 +29,66 @@ namespace wic
 {
   /** \brief a simple UDP server that connects to multiple clients
    *
-   *  A Server works by sending and recieving packets to and from players.
-   *  Server handles certain low level functions, such as joining,  kicking,
-   *  and banning players. More advanced features can be implemented by users by
-   *  pulling recieved packets out of a Server and processing them accordingly.
-   *  Only one Server can be initialized at a time.
-   *
-   *  Since Server uses UDP, packets are likely, but not guaranteed, to arrive
-   *  in order. Packets may not even arrive at all.
+   *  A Server sends and recieves packets to and from multiple clients.
+   *  Server handles certain low level functions, such as joining, kicking,
+   *  and banning clients (by name or IP). More advanced features can be 
+   *  implemented by users by pulling recieved packets out of a Server and 
+   *  processing them accordingly.
    */
   class Server
   {
   public:
-    /** \brief initializes a Server, allowing remote clients to connect
-     *  \param name the desired name of the server; must have 1-20 characters
-     *  \param port the desired port
-     *  \param maxClients the desired maximum number of connected clients; must be
+    /** \brief Constructor (starts server)
+     *  \param name server's name; limited to 20 characters
+     *  \param port port number on which to listen for packets; must be >1024
+     *  \param maxClients maximum simultaneously connected clients; must be
      *         in the range 1-254
      */
     Server(string name, unsigned port, uint8_t maxClients);
     ~Server();
-    /** \brief sends a single packet to a client
+    /** \brief sends a packet to a single client
      *  \param packet the packet to send
-     *  \param destID the index of the client to sent it to; must be > 0
+     *  \param destID the ID of the recipient
      */
-    void send(Packet& packet, NodeID destID);
-    /** \brief sends a packet to all connected clients but one
+    void send(const Packet& packet, NodeID destID) const;
+    /** \brief sends a packet to all but one clients
      *  \param packet the packet to send
-     *  \param excludeID the index of the client to exclude; must be > 0
+     *  \param excludeID the ID of the excluded client
      */
-    void sendExclude(Packet& packet, NodeID excludeID);
-    /** \brief sends a packet to all connected clients
+    void sendExclude(const Packet& packet, NodeID excludeID) const;
+    /** \brief broadcasts a packet to all clients
      *  \param packet the packet to send
      */
-    void sendAll(Packet& packet);
-    /** \brief fetches and processes a single packet from a client
+    void sendAll(const Packet& packet) const;
+    /** \brief fetches and processes a single recieved packet
      *  \param result the destination of the received packet
+     *  \return true if packet recieved, false otherwise
      */
-    void recv(Packet& result);
+    bool recv(MysteryPacket& result);
     /** \brief kicks a client
-     *  \param ID the client's index; must be > 0
-     *  \param reason string given the reason for kick; must be 0-50 characters
+     *  \param ID the ID of the client to be kicked
+     *  \param reason the reason; limited to 50 characters
      */
     void kick(NodeID ID, string reason);
     /** \brief kicks a client
      *  \param nameOrIP the client's name or IP address
-     *  \param reason string given the reason for kick; must be 0-50 characters
+     *  \param reason the reason; limited to 50 characters
      */
     void kick(string nameOrIP, string reason);
-    /** \brief bans a client by ID
-     *  \param ID the client's index; must be > 0
+    /** \brief kicks a client and prevents them from reconnecting
+     *  \param ID the ID of the client to be banned
      */
     void ban(NodeID ID);
     /** \brief bans a name or IP address
      *  \param nameOrIP a name or IP address
      */
     void ban(string nameOrIP);
-    /** \brief unbans a client name of IP address
+    /** \brief unbans a name or IP address
      *  \param nameOrIP a name or IP address
      */
     void unban(string nameOrIP);
-    /** \brief returns the node index of a client with a particular name/IP
-     *  \return index on success, 0 on failure
-     */
-    NodeID getID(string nameOrIP);
+    /** \brief returns the ID of the client with a name or IP address */
+    NodeID getID(string nameOrIP) const;
   private:
     string name_;
     uint8_t maxNodes_;

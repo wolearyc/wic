@@ -1,5 +1,5 @@
 /* ----------------------------------------------------------------------------
- * wic - a simple 2D game engine for Mac OSX written in C++
+ * wic - a simple 2D game engine for MacOS written in C++
  * Copyright (C) 2013-2017  Willis O'Leary
  *
  * This program is free software: you can redistribute it and/or modify it
@@ -30,8 +30,8 @@
 #include "Image.h"
 #include "Packet.h"
 #include "Pair.h"
-#include "Poly.h"
-#include "Rect.h"
+#include "Polygon.h"
+#include "Quad.h"
 #include "Server.h"
 #include "Splash.h"
 #include "Text.h"

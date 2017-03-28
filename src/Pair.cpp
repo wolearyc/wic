@@ -1,5 +1,5 @@
 /* ----------------------------------------------------------------------------
- * wic - a simple 2D game engine for Mac OSX written in C++
+ * wic - a simple 2D game engine for MacOS written in C++
  * Copyright (C) 2013-2017  Willis O'Leary
  *
  * This program is free software: you can redistribute it and/or modify it
@@ -21,11 +21,11 @@
 #include "Pair.h"
 namespace wic
 {
-  Pair::Pair(double x_, double y_)
+  Pair::Pair(double x_, double y_) 
   :x(x_), y(y_)
   {
   }
-  Pair::Pair(int x_, int y_)
+  Pair::Pair(int x_, int y_) 
   :Pair((double) x_, (double) y_)
   {
   }
@@ -33,26 +33,26 @@ namespace wic
   :Pair(0.0,0.0)
   {
   }
-  Pair::Pair(const Pair& other)
+  Pair::Pair(const Pair& other) 
   :Pair(other.x, other.y)
   {
   }
-  double Pair::distance(const Pair& other)
+  double Pair::distance(const Pair& other) const 
   {
-    return(sqrt(pow(other.x - x, 2.0) + pow(other.y - y, 2.0)));
+    return(std::sqrt(pow(other.x - x, 2.0) + pow(other.y - y, 2.0)));
   }
-  double Pair::angle(const Pair& other)
+  double Pair::angle(const Pair& other) const 
   {
-    return(atan2(other.y - y, other.x - x));
+    return(std::atan2(other.y - y, other.x - x));
   }
-  double Pair::norm()
+  double Pair::norm() const 
   {
-    return sqrt(x*x+y*y);
+    return std::sqrt(x*x+y*y);
   }
-  void Pair::transform(double rotation, Pair scale, Pair center)
+  void Pair::transform(double rotation, Pair scale, Pair center)  
   {
-    double cosine = cos(rotation);
-    double sine = sin(rotation);
+    double cosine = std::cos(rotation);
+    double sine = std::sin(rotation);
     x = x - center.x;
     y = y - center.y;
     x = x * scale.x;
@@ -60,111 +60,111 @@ namespace wic
     x = x * cosine - y * sine;
     y = x * sine + y * cosine;
   }
-  Pair Pair::operator+(const Pair& other) const
+  Pair Pair::operator+(const Pair& other) const 
   {
     return(Pair(x + other.x, y + other.y));
   }
-  Pair Pair::operator-(const Pair& other) const
+  Pair Pair::operator-(const Pair& other) const 
   {
     return(Pair(x - other.x, y - other.y));
   }
-  Pair Pair::operator*(const Pair& other) const
+  Pair Pair::operator*(const Pair& other) const 
   {
     return(Pair(x * other.x, y * other.y));
   }
-  Pair Pair::operator/(const Pair& other) const
+  Pair Pair::operator/(const Pair& other) const 
   {
     return(Pair(x / other.x, y / other.y));
   }
-  Pair Pair::operator+=(const Pair& other)
+  Pair Pair::operator+=(const Pair& other) 
   {
     x += other.x;
     y += other.y;
     return(Pair(x, y));
   }
-  Pair Pair::operator-=(const Pair& other)
+  Pair Pair::operator-=(const Pair& other) 
   {
     x -= other.x;
     y -= other.y;
     return(Pair(x, y));
   }
-  Pair Pair::operator*=(const Pair& other)
+  Pair Pair::operator*=(const Pair& other) 
   {
     x *= other.x;
     y *= other.y;
     return(Pair(x, y));
   }
-  Pair Pair::operator/=(const Pair& other)
+  Pair Pair::operator/=(const Pair& other) 
   {
     x /= other.x;
     y /= other.y;
     return(Pair(x, y));
   }
-  bool Pair::operator==(const Pair& other)
+  bool Pair::operator==(const Pair& other) const
   {
     return(fabs(x - other.x) < 0.0000001 &&
            (fabs(y - other.y) < 0.0000001));
   }
-  bool Pair::operator!=(const Pair& other) const
+  bool Pair::operator!=(const Pair& other) const 
   {
     return(fabs(x - other.x) >= 0.0000001 &&
            (fabs(y - other.y) >= 0.0000001));
   }
-  bool Pair::operator>=(const Pair& other)
+  bool Pair::operator>=(const Pair& other) const
   {
     return(x - other.x >= 0.0000001 &&
            (y - other.y >= 0.0000001));
   }
-  bool Pair::operator>(const Pair& other)
+  bool Pair::operator>(const Pair& other) const
   {
     return(x - other.x > 0.0000001 &&
            (y - other.y > 0.0000001));
   }
-  bool Pair::operator<=(const Pair& other)
+  bool Pair::operator<=(const Pair& other) const
   {
     return(x - other.x <= 0.0000001 &&
            (y - other.y <= 0.0000001));
   }
-  bool Pair::operator<(const Pair& other)
+  bool Pair::operator<(const Pair& other) const
   {
     return(x - other.x < 0.0000001 &&
            (y - other.y < 0.0000001));
   }
-  Pair Pair::operator+(const double i) const
+  Pair Pair::operator+(const double i) const 
   {
     return(Pair(x + i, y + i));
   }
-  Pair Pair::operator-(const double i) const
+  Pair Pair::operator-(const double i) const 
   {
     return(Pair(x - i, y - i));
   }
-  Pair Pair::operator*(const double i) const
+  Pair Pair::operator*(const double i) const 
   {
     return(Pair(x * i, y * i));
   }
-  Pair Pair::operator/(const double i) const
+  Pair Pair::operator/(const double i) const 
   {
     return(Pair(x / i, y / i));
   }
-  Pair Pair::operator+=(const double i)
+  Pair Pair::operator+=(const double i) 
   {
     x += i;
     y += i;
     return(Pair(x, y));
   }
-  Pair Pair::operator-=(const double i)
+  Pair Pair::operator-=(const double i) 
   {
     x -= i;
     y -= i;
     return(Pair(x, y));
   }
-  Pair Pair::operator*=(const double i)
+  Pair Pair::operator*=(const double i) 
   {
     x *= i;
     y *= i;
     return(Pair(x, y));
   }
-  Pair Pair::operator/=(const double i)
+  Pair Pair::operator/=(const double i) 
   {
     x /= i;
     y /= i;

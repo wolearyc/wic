@@ -1,5 +1,5 @@
 /* ----------------------------------------------------------------------------
- * wic - a simple 2D game engine for Mac OSX written in C++
+ * wic - a simple 2D game engine for MacOS written in C++
  * Copyright (C) 2013-2017  Willis O'Leary
  *
  * This program is free software: you can redistribute it and/or modify it
@@ -21,12 +21,7 @@
 /** \file */
 #ifndef IMAGE_H
 #define IMAGE_H
-#include "Locateable.h"
-#include "Rotateable.h"
-#include "Scaleable.h"
-#include "Colorable.h"
-#include "Bounded.h"
-#include "Drawable.h"
+#include "Interfaces.h"
 #include "Texture.h"
 namespace wic
 {
@@ -37,27 +32,18 @@ namespace wic
   {
   public:
     /** \brief Constructor
-     *  \param location_ the desired screen location
-     *  \param texture_ the desired Texture
+     *  \param location_ the screen location
+     *  \param texture_ the texture
      */
-    Image(Pair location_, Texture* texture_);
+    Image(Pair location_, const Texture* texture_);
     /** \brief Default constructor */
     Image();
     /** \brief Copy constructor */
     Image(const Image& other);
-    /** \brief fetches the geometric center of a Image
-     *  \return the geometric center of the Image on success, {-1, -1} on failure
-     */
-    Pair getGeoCenter();
-    /** \brief draws a Image to the screen
-     *  \return true on success, false on failure
-     */
-    void draw(Game& game);
-    /** \brief deallocates a Image
-     *  \param target the target Image
-     *  \return true on success, false on failure
-     */
-    Texture* texture;     /**< the texture */
+    /** \brief fetches the geometric center */
+    Pair getGeoCenter() const;
+    void draw(const Game& game);
+    const Texture* texture;     /**< the texture */
   };
 }
 #endif

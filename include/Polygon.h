@@ -1,5 +1,5 @@
 /* ----------------------------------------------------------------------------
- * wic - a simple 2D game engine for Mac OSX written in C++
+ * wic - a simple 2D game engine for MacOS written in C++
  * Copyright (C) 2013-2017  Willis O'Leary
  *
  * This program is free software: you can redistribute it and/or modify it
@@ -22,12 +22,7 @@
 #ifndef POLYGON_H
 #define POLYGON_H
 #include <vector>
-#include "Locateable.h"
-#include "Rotateable.h"
-#include "Scaleable.h"
-#include "Colorable.h"
-#include "Bounded.h"
-#include "Drawable.h"
+#include "Interfaces.h"
 using std::vector;
 namespace wic
 {
@@ -39,7 +34,7 @@ namespace wic
   public:
     /** \brief Constructor
      *  \param location_ the desired screen location
-     *  \param vertices_ the vertices in drawing order, must have more than 2
+     *  \param vertices_ the vertices in drawing order; must contain >2 vertices
      *  \param color_ the desired color
      */
     Polygon(Pair location_, vector<Pair> vertices, Color color_);
@@ -47,15 +42,18 @@ namespace wic
     Polygon();
     /** \brief Copy constructor */
     Polygon(const Polygon& other);
-    /** \brief Gets geometric center of polygon
-     *  \return the geometic center
+    void draw(const Game& game);
+    /** \brief Gets the geometric center */
+    Pair getGeoCenter() const;
+    /** \brief sets new vertices
+     *  \param vertices the new vertices in drawing order; must contain >2 
+     *         vertices
      */
-    void draw(Game& game);
-    Pair getGeoCenter();
     void setVertices(vector<Pair> vertices);
-    vector<Pair> getVertices();
+    /** \brief gets the list of vertices in drawing order */
+    vector<Pair> getVertices() const;
   protected:
-    vector<Pair> vertices_;       /**< the set of vertices in drawing order */
-  } Polygon;
+    vector<Pair> vertices_;
+  };
 }
 #endif

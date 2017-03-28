@@ -1,5 +1,5 @@
 /* ----------------------------------------------------------------------------
- * wic - a simple 2D game engine for Mac OSX written in C++
+ * wic - a simple 2D game engine for MacOS written in C++
  * Copyright (C) 2013-2017  Willis O'Leary
  *
  * This program is free software: you can redistribute it and/or modify it
@@ -22,12 +22,12 @@
 namespace wic
 {
   static Image working_image;
-  Text::Text(Pair location_, string str, Font* font, Color color_)
+  Text::Text(Pair location_, string str, const Font* font, Color color_)
   : Locateable(location_), Rotateable(), Scaleable(), Colorable(color_),
     Bounded(), Drawable(), str_(str), font_(font)
   {
     if(!font)
-      throw WicError(WIC_ERRNO_NULL_FONT);
+      throw InvalidArgument("font", "should not be null");
     
     offsets_.resize(str.length());
     images_.resize(str.length());
@@ -49,11 +49,11 @@ namespace wic
     images_.resize(str.length());
     bounds = getData();
   }
-  string Text::getString()
+  string Text::getString() const
   {
     return str_;
   }
-  void Text::draw(Game& game)
+  void Text::draw(const Game& game)
   {
     for(unsigned i = 0; i < str_.length(); i++)
     {
@@ -112,7 +112,7 @@ namespace wic
         images_[i].texture = 0;
       else
       {
-        images_[i] = Image(location, font_->textures_[c]);
+        images_[i] = Image(location, &font_->textures_[c]);
         images_[i].drawCentered = true;
       }
     }

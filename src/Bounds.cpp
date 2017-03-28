@@ -1,5 +1,5 @@
 /* ----------------------------------------------------------------------------
- * wic - a simple 2D game engine for Mac OSX written in C++
+ * wic - a simple 2D game engine for MacOS written in C++
  * Copyright (C) 2013-2017  Willis O'Leary
  *
  * This program is free software: you can redistribute it and/or modify it
@@ -22,24 +22,24 @@
 #include "Bounds.h"
 namespace wic
 {
-  Bounds::Bounds(Pair lowerLeft_, Pair upperRight_)
+  Bounds::Bounds(Pair lowerLeft_, Pair upperRight_) 
   :lowerLeft(lowerLeft_), upperRight(upperRight_)
   {
   }
   Bounds::Bounds(int lowerLeftX, int lowerLeftY, int upperRightX,
-                 int upperRightY)
+                 int upperRightY) 
   :Bounds(Pair(lowerLeftX, lowerLeftY), Pair(upperRightX, upperRightY))
   {
   }
-  Bounds::Bounds(Pair location, int xDimension, int yDimension)
+  Bounds::Bounds(Pair location, int xDimension, int yDimension) 
   :Bounds(location, location + Pair(xDimension,yDimension))
   {
   }
-  Bounds::Bounds(const Bounds& other)
+  Bounds::Bounds(const Bounds& other) 
   :Bounds(other.lowerLeft, other.upperRight)
   {
   }
-  Bounds::Bounds()
+  Bounds::Bounds() 
   :Bounds(Pair(), Pair(32,32))
   {
   }
