@@ -1,5 +1,5 @@
 /* ----------------------------------------------------------------------------
- * wic - a simple 2D game engine for Mac OSX written in C++
+ * wic - a simple 2D game engine for MacOS written in C++
  * Copyright (C) 2013-2017  Willis O'Leary
  *
  * This program is free software: you can redistribute it and/or modify it
@@ -27,55 +27,58 @@ using std::string;
 using std::vector;
 namespace wic
 {
-  /** \brief a simple UDP client that connects to a server
+  /** \brief a UDP client that connects to a server
    *
-   *  A Client works by sending and recieving packets to and from a server.
-   *  Client handles certain low level functions, such as joining and leaving.
-   *  More advanced features can be implemented by users by pulling received
-   *  packets out of a Client and processing them accordingly. Only
-   *  one Client can be initialized at a time in a game.
-   *  Since Client uses UDP, packets are likely, but not guaranteed, to arrive
-   *  in order. Packets may not even arrive at all.
+   *  A Client sends and recieves packets to and from the server. It handles
+   *  certain low-level functions, such as joining and leaving.
+   *  More advanced features should be implemented by pulling recieved packets
+   *  out of a client and processing them accordingly. 
+   *
+   *  Each client has an unique nonzero ID assigned by the server. Every client
+   *  also possesses a name (username), which need not be unique and can
+   *  can certainly be empty.
    */
   class Client
   {
   public:
-    /** \brief Constructor
-     *  \param name the client's name, up to 20 characters
+    /** \brief Constructor (joins server)
+     *  \param name the username; limited to 20 characters
+     *  \param serverPort the server port number; must be > 1024
+     *  \param serverIP the server IP address
+     *  \param timeout the time, in seconds, to wait for server response
      */
-    Client(string name);
-    /** \brief Default constructor */
-    Client();
+    Client(string name, unsigned serverPort, string serverIP, double timeout);
     ~Client();
-    /** \brief attempts to join a client to its server
-     *  \param port the server port; must
-     *  \param ip the server IP address
-     *  \param timeout the join timeout in seconds
-     *  \return the server's response packet
-     */
-    Packet join(unsigned port, string ip, double timeout);
-    /** \brief sends a packet to a client's server
+    /** \brief sends a packet to the server
      *  \param packet the packet to send
      */
-    void send(Packet& packet);
-    /** \brief attempted to fetch and process a single packet from the server
-     *  \param result the destination of the received packet
+    void send(const Packet& packet) const;
+    /** \brief attempts to fetch and process a single packet from the server
+     *  \param result the destination of recieved packet
+     *  \return true if packet recieved, false otherwise
      */
-    void recv(Packet& result);
-    /** \brief leaves the server
-     */
-    void leave();
+    bool recv(MysteryPacket& result);
+    /** \brief returns the client's unique server-assigned ID */
+    NodeID ID() const;
+    /** \brief returns the client's name */
+    string name() const;
+    /** \brief gets the maximum allowed ID */
+    NodeID getMaxID() const;
+    /** \brief returns whether or not an ID is in use */
+    bool isUsed(NodeID ID);
+    /** \brief returns the name associated with a certain ID */
+    string getName(NodeID ID);
   private:
-    bool joined_;                    /**< whether or not  joined */
-    NodeID ID_;                      /**< server-assigned ID */
-    string name_;                    /**< name */
-    uint8_t maxNodes_;               /**< max nodes supported by server */
-    vector<bool> used_;              /**< ID-indexed used list */
-    vector<string> names_;           /**< ID-indexed names */
-    int socket_;                     /**< socket */
-    socklen_t lenAddr_;              /**< address length */
-    struct sockaddr_in addr_;        /**< address */
-    struct sockaddr_in serverAddr_;  /**< server address */
+    bool joined_;
+    NodeID ID_;
+    string name_;                    
+    uint8_t maxNodes_;
+    vector<bool> used_;
+    vector<string> names_;
+    int socket_;                     
+    socklen_t lenAddr_;              
+    struct sockaddr_in addr_;        
+    struct sockaddr_in serverAddr_;
   };
 }
 #endif

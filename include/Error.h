@@ -1,5 +1,5 @@
 /* ----------------------------------------------------------------------------
- * wic - a simple 2D game engine for Mac OSX written in C++
+ * wic - a simple 2D game engine for MacOS written in C++
  * Copyright (C) 2013-2017  Willis O'Leary
  *
  * This program is free software: you can redistribute it and/or modify it
@@ -26,85 +26,53 @@
 using std::string;
 namespace wic
 {
-  typedef enum ErrorCode
-  {
-    WIC_ERRNO_NONE,
-    WIC_ERRNO_ALREADY_INIT,
-    WIC_ERRNO_NO_HEAP,
-    WIC_ERRNO_LOAD_FILE_FAIL,
-    WIC_ERRNO_NULL_TARGET,
-    WIC_ERRNO_NULL_GAME,
-    WIC_ERRNO_SMALL_X_DIMENSION,
-    WIC_ERRNO_SMALL_Y_DIMENSION,
-    WIC_ERRNO_NULL_TITLE,
-    WIC_ERRNO_SMALL_TITLE,
-    WIC_ERRNO_SMALL_FPS,
-    WIC_ERRNO_GLFW_FAIL,
-    WIC_ERRNO_MONITOR_FAIL,
-    WIC_ERRNO_WINDOW_FAIL,
-    WIC_ERRNO_FREETYPE_FAIL,
-    WIC_ERRNO_NULL_BUFFER,
-    WIC_ERRNO_NO_GPU_MEM,
-    WIC_ERRNO_NULL_FILEPATH,
-    WIC_ERRNO_NULL_TEXTURE,
-    WIC_ERRNO_NULL_VERTICES,
-    WIC_ERRNO_SMALL_NUM_VERTICES,
-    WIC_ERRNO_SMALL_POINT,
-    WIC_ERRNO_NULL_RESULT,
-    WIC_ERRNO_NULL_FONT,
-    WIC_ERRNO_NULL_STRING,
-    WIC_ERRNO_INVALID_RED,
-    WIC_ERRNO_INVALID_GREEN,
-    WIC_ERRNO_INVALID_BLUE,
-    WIC_ERRNO_INVALID_ALPHA,
-    WIC_ERRNO_NULL_PACKET,
-    WIC_ERRNO_NULL_NAME,
-    WIC_ERRNO_SMALL_NAME,
-    WIC_ERRNO_LARGE_NAME,
-    WIC_ERRNO_RESERVED_PORT,
-    WIC_ERRNO_NULL_SERVER_IP,
-    WIC_ERRNO_SMALL_LEN_SERVER_IP,
-    WIC_ERRNO_SOCKET_FAIL,
-    WIC_ERRNO_PORT_IN_USE,
-    WIC_ERRNO_SOCKET_BIND_FAIL,
-    WIC_ERRNO_CLIENT_ALREADY_JOINED,
-    WIC_ERRNO_JOIN_FAIL_FULL,
-    WIC_ERRNO_JOIN_FAIL_BANNED,
-    WIC_ERRNO_CLIENT_NOT_JOINED,
-    WIC_ERRNO_TIMEOUT,
-    WIC_ERRNO_PACKET_UNKNOWN_SOURCE,
-    WIC_ERRNO_SMALL_MAX_CLIENTS,
-    WIC_ERRNO_LARGE_MAX_CLIENTS,
-    WIC_ERRNO_NOT_CLIENT_INDEX,
-    WIC_ERRNO_IMPOSSIBLE_INDEX,
-    WIC_ERRNO_INDEX_UNUSED,
-    WIC_ERRNO_LARGE_REASON,
-    WIC_ERRNO_NULL_NAME_OR_IP,
-    WIC_ERRNO_LARGE_NAME_OR_IP,
-    WIC_ERRNO_UNBANNED_NAME_OR_IP,
-    WIC_ERRNO_NO_SUCH_CLIENT,
-  } ErrorCode;
-  
-  /** \brief a generic wic exception
-   *
-   * When an exception is thrown by Wic, an error message is automatically printed
-   * to the terminal.
-   */
-  class WicError : public std::exception
+  /** \brief General runtime exception */
+  class Error : public std::runtime_error
   {
   public:
-    /** \brief constructs a WicError
-     * \param code the error code
+    /** \brief Constructor
+     * \param reason the reason for the error
      */
-    WicError(enum ErrorCode code);
-    /** \brief constructs a WicError with the message "unkown error" */
-    WicError();
-    /**\brief retrieves the formatted error message
-     * \return the formatted error message
+    Error(string reason);
+    /** \brief Constructor (when error is unspecified) */
+    Error();
+  private:
+  };
+  /** \brief Internal, unavoidable error */
+  class InternalError : public Error
+  {
+    using Error::Error;
+  };
+  /** \brief thrown when a file cannot be found or loaded */
+  class InvalidFile : public Error
+  {
+  public:
+    /** \brief Constructor
+     *  \param filepath the offending filepath
      */
-    string what();
-  protected:
-    string message_;
+    InvalidFile(string filepath);
+  };
+  /** \brief thrown when an argument is logically invalid */
+  class InvalidArgument : public std::invalid_argument
+  {
+  public:
+    /** \brief Constructor
+     *  \param name the offending argument's name
+     *  \param help a help string
+     */
+    InvalidArgument(string name, string help);
+    string name();
+  private:
+    string name_;
+  };
+  /** \brief thrown when a function fails, though not due to error.
+   *  A "failure" is distinct from an "error" as an failure is typically
+   *  nonfatal. For example, a client may not be able to join because the
+   *  server is full. This is not exactly an error condition.
+   */
+  class Failure : public Error
+  {
+    using Error::Error;
   };
 }
 #endif

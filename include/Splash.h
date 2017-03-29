@@ -34,6 +34,6 @@ namespace wic
    *  \param textColor the desired text color (try Color::WicOrange)
    *  \param game the game
    */
-  void drawSplash(Color backgroundColor, Color textColor, const Game& game);
+  void drawSplash(Color backgroundColor, Color textColor, Game& game);
 }
 #endif

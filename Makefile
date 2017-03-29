@@ -2,7 +2,7 @@
 # Targets: all (default, release), release, debug, doxygen, and clean.
 
 # SETTINGS
-CC         = gcc
+CC         = g++
 LD         = ld
 CFLAGS     = -std=c++11
 DEBUGFLAGS = -g

@@ -181,4 +181,24 @@ namespace wic
   {
     return ID_;
   }
+  string Client::name() const
+  {
+    return name_;
+  }
+  NodeID Client::getMaxID() const
+  {
+    return maxNodes_;
+  }
+  bool Client::isUsed(NodeID ID)
+  {
+    if(ID > getMaxID())
+      return false;
+    return used_[ID];
+  }
+  string Client::getName(NodeID ID)
+  {
+    if(!isUsed(ID))
+      throw InvalidArgument("ID", "ID is not associated with any client");
+    return names_[ID];
+  }
 }
