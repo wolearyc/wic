@@ -21,11 +21,10 @@
 /** \file */
 #ifndef TEXTURE_H
 #define TEXTURE_H
-#include "stdlib.h"
-#include "Pair.h"
-#include "Error.h"
 #include <SOIL/SOIL.h>
 #include <OpenGL/gl.h>
+#include "Pair.h"
+#include "Error.h"
 namespace wic
 {
   /** \brief defines constants for texture filtering (behavior when images are

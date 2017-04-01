@@ -34,7 +34,7 @@ namespace wic
   public:
     /** \brief Constructor
      *  \param location_ the desired screen location
-     *  \param vertices_ the vertices in drawing order; must contain >2 vertices
+     *  \param vertices  the vertices in drawing order; must contain >2 vertices
      *  \param color_ the desired color
      */
     Polygon(Pair location_, vector<Pair> vertices, Color color_);

@@ -24,26 +24,18 @@ namespace wic
   const uint8_t NAME_SIZE = 20;
   const NodeID SERVER_ID = 0;
   
-  void Packet::populate(const Packet& other)
+  AbstractPacket::AbstractPacket()
   {
-    if(!isType(other))
-      throw Error("packet ID mismatch");
-    data_ = other.data_;
-    source_ = other.source_;
   }
-  vector<uint8_t> Packet::data() const
+  vector<uint8_t> AbstractPacket::data() const
   {
     return data_;
   }
-  NodeID Packet::source() const
+  NodeID AbstractPacket::source() const
   {
     return source_;
   }
-  bool Packet::isType(const Packet& other) const
-  {
-    return type() == other.type();
-  }
-  void Packet::toBuffer(uint8_t* dest, NodeID source) const
+  void AbstractPacket::toBuffer(uint8_t* dest, NodeID source) const
   {
     if(!dest)
       throw InvalidArgument("dest", "should not be null");
@@ -52,10 +44,24 @@ namespace wic
     dest[2] = size();
     memcpy(dest + HEADER_SIZE, data_.data(), size());
   }
-  const size_t Packet::HEADER_SIZE = sizeof(NodeID) + 2*sizeof(uint8_t);
+
+  const size_t AbstractPacket::HEADER_SIZE = sizeof(NodeID) + 2*sizeof(uint8_t);
+
+  template<class SubPacket> Packet<SubPacket>::Packet(const AbstractPacket& other)
+  {
+    data_ = other.data();
+    source_ = other.source();
+  }
   
-  uint8_t MysteryPacket::type() const { return type_; }
-  uint8_t MysteryPacket::size() const { return size_; }
+  template<class SubPacket> uint8_t Packet<SubPacket>::type() const
+  {
+    return SubPacket::Type;
+  }
+  template<class SubPacket> uint8_t Packet<SubPacket>::size() const
+  {
+    return SubPacket::Size;
+  }
+
   void MysteryPacket::populate(uint8_t* src)
   {
     if(!src)
@@ -64,17 +70,31 @@ namespace wic
     source_ = src[1];
     size_ = src[2];
     data_.reserve(size_);
-    for(uint8_t i=Packet::HEADER_SIZE; i < Packet::HEADER_SIZE + size_; i++)
+    for(uint8_t i=AbstractPacket::HEADER_SIZE; i < AbstractPacket::HEADER_SIZE + size_; i++)
       data_.push_back(src[i]);
   }
+  void MysteryPacket::populate(const AbstractPacket& other)
+  {
+    type_ = other.type();
+    source_ = other.source();
+    size_ = other.size();
+    data_ = other.data();
+  }
 
-  void JoinRequest::populate(string name)
+  uint8_t MysteryPacket::type() const { return type_; }
+  uint8_t MysteryPacket::size() const { return size_; }
+  template <class PacketClass> bool MysteryPacket::isType() const
+  {
+    return type() == PacketClass::type;
+  }
+  
+  JoinRequest::JoinRequest(string name)
   {
     data_.reserve(size());
     memcpy(data_.data(), name.data(), name.length() + 1);
   }
   string JoinRequest::name()  { return string((char*) data_.data()); }
-  void JoinResponse::populate(uint8_t responseCode, uint8_t numNodes,
+  JoinResponse::JoinResponse(uint8_t responseCode, uint8_t numNodes,
                               NodeID assignedID, string serverName)
   {
     data_.reserve(size());
@@ -93,7 +113,7 @@ namespace wic
   const uint8_t JoinResponse::FULL = 1;
   const uint8_t JoinResponse::BANNED = 2;
   
-  void ClientJoined::populate(NodeID newID, string newName)
+  ClientJoined::ClientJoined(NodeID newID, string newName)
   {
     data_.reserve(size());
     data_[0] = newID;
@@ -102,7 +122,7 @@ namespace wic
   NodeID ClientJoined::newID() const   { return data_[0]; }
   string ClientJoined::newName() const { return string((char*) &data_.data()[1]); }
   
-  void ClientInfo::populate(NodeID ID, string name)
+  ClientInfo::ClientInfo(NodeID ID, string name)
   {
     data_.reserve(size());
     data_[0] = ID;
@@ -111,21 +131,21 @@ namespace wic
   NodeID ClientInfo::ID() const   { return data_[0]; }
   string ClientInfo::name() const { return string((char*) &data_.data()[1]); }
   
-  void Kick::populate(string reason)
+  Kick::Kick(string reason)
   {
     data_.reserve(size());
     memcpy(data_.data(), reason.data(), reason.length() + 1);
   }
   string Kick::reason() const  { return string((char*) data_.data()); }
   
-  void Ban::populate(string reason)
+  Ban::Ban(string reason)
   {
     data_.reserve(size());
     memcpy(data_.data(), reason.data(), reason.length() + 1);
   }
   string Ban::reason() const  { return string((char*) data_.data()); }
   
-  void ClientLeft::populate(NodeID oldID, uint8_t leaveCode, string reason)
+  ClientLeft::ClientLeft(NodeID oldID, uint8_t leaveCode, string reason)
   {
     data_.reserve(size());
     data_[0] = oldID;
@@ -140,4 +160,6 @@ namespace wic
   const uint8_t ClientLeft::NORMAL = 0;
   const uint8_t ClientLeft::KICKED = 1;
   const uint8_t ClientLeft::BANNED = 2;
+  
+  Shutdown::Shutdown() {}
 }

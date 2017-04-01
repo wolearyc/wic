@@ -21,10 +21,8 @@
 /** \file */
 #ifndef CLIENT_H
 #define CLIENT_H
+#include "Node.h"
 #include "Packet.h"
-#include "Error.h"
-using std::string;
-using std::vector;
 namespace wic
 {
   /** \brief a UDP client that connects to a server
@@ -38,7 +36,7 @@ namespace wic
    *  also possesses a name (username), which need not be unique and can
    *  can certainly be empty.
    */
-  class Client
+  class Client : public Node
   {
   public:
     /** \brief Constructor (joins server)
@@ -52,32 +50,13 @@ namespace wic
     /** \brief sends a packet to the server
      *  \param packet the packet to send
      */
-    void send(const Packet& packet) const;
+    void send(const AbstractPacket& packet) const;
     /** \brief attempts to fetch and process a single packet from the server
      *  \param result the destination of recieved packet
      *  \return true if packet recieved, false otherwise
      */
     bool recv(MysteryPacket& result);
-    /** \brief returns the client's unique server-assigned ID */
-    NodeID ID() const;
-    /** \brief returns the client's name */
-    string name() const;
-    /** \brief gets the maximum allowed ID */
-    NodeID getMaxID() const;
-    /** \brief returns whether or not an ID is in use */
-    bool isUsed(NodeID ID);
-    /** \brief returns the name associated with a certain ID */
-    string getName(NodeID ID);
   private:
-    bool joined_;
-    NodeID ID_;
-    string name_;                    
-    uint8_t maxNodes_;
-    vector<bool> used_;
-    vector<string> names_;
-    int socket_;                     
-    socklen_t lenAddr_;              
-    struct sockaddr_in addr_;        
     struct sockaddr_in serverAddr_;
   };
 }

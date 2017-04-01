@@ -58,9 +58,9 @@ namespace wic
   public:
     /** \brief Constructor
      *  \param name the offending argument's name
-     *  \param help a help string
+     *  \param condition condition on argument that caused the error
      */
-    InvalidArgument(string name, string help);
+    InvalidArgument(string name, string condition);
     string name();
   private:
     string name_;

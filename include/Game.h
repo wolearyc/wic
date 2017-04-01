@@ -183,7 +183,6 @@ namespace wic
      *  \param fullscreen whether or not the game should run fullscreen
      *  \param samples the number of samples to use with antialiasing, a value of 0
      *         disables antialiasing
-     *  \return a valid pointer to a Game on success, null on failure
      */
     Game(string title, Pair dimensions, unsigned fps,
          bool resizeable, bool fullscreen, unsigned samples);

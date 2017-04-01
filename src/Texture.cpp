@@ -23,23 +23,23 @@ namespace wic
 {
   Texture::Texture(unsigned char* buffer, Pair dimensions, enum Format format,
                    enum Filter filter, enum Wrap wrap)
+  : dimensions_(dimensions)
   {
     if(!buffer)
       throw InvalidArgument("buffer", "should not be null");
-    if(dimensions.x < 1)
+    if(dimensions_.x < 1)
       throw InvalidArgument("dimensions.x", "should be nonzero");
-    if(dimensions.y < 1)
+    if(dimensions_.y < 1)
       throw InvalidArgument("dimensions.y", "should be nonzero");
-    int x_dimension = (int) (dimensions.x) * 4;
-    int y_dimension = (int) dimensions.y;
-    unsigned char** temp = new unsigned char*[x_dimension];
-    for(int x = 0; x < x_dimension; x++)
+    
+    int xDimension = (int) (dimensions_.x) * 4;
+    int yDimension = (int) dimensions_.y;
+    unsigned char** temp = new unsigned char*[xDimension];
+    for(int x = 0; x < xDimension; x++)
+      temp[x] = new unsigned char[yDimension];
+    for(int y = 0; y < yDimension; y++)
     {
-      temp[x] = new unsigned char[y_dimension];
-    }
-    for(int y = 0; y < y_dimension; y++)
-    {
-      for(int x = 0; x < x_dimension; x+=4)
+      for(int x = 0; x < xDimension; x+=4)
       {
         temp[x][y] = 255;
         temp[x+1][y] = 255;
@@ -48,9 +48,9 @@ namespace wic
       }
     }
     int bufferIndex = 0;
-    for(int y = 0; y < y_dimension; y++)
+    for(int y = 0; y < yDimension; y++)
     {
-      for(int x = 0; x < x_dimension; x+=4)
+      for(int x = 0; x < xDimension; x+=4)
       {
         if(format == Format::Mono)
         {
@@ -84,20 +84,20 @@ namespace wic
         }
       }
     }
-    unsigned char* formattedBuffer = new unsigned char[x_dimension*y_dimension];
+    unsigned char* formattedBuffer = new unsigned char[xDimension*yDimension];
 
     int formattedBufferIndex = 0;
-    for(int y = y_dimension-1; y >= 0; y--) /* flips texture */
+    for(int y = yDimension-1; y >= 0; y--) /* flips texture */
     {
-      for(int x = 0; x < x_dimension; x++)
+      for(int x = 0; x < xDimension; x++)
       {
         formattedBuffer[formattedBufferIndex] = temp[x][y];
         formattedBufferIndex++;
       }
     }
-    for(int x = 0; x < x_dimension; x++)
-      free(temp[x]);
-    free(temp);
+    for(int x = 0; x < xDimension; x++)
+      delete[] temp[x];
+    delete [] temp;
     unsigned int data;
     glGenTextures(1, &data);
     glBindTexture(GL_TEXTURE_2D, data);
@@ -113,7 +113,7 @@ namespace wic
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, (GLint) filter);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, dimensions.x, dimensions.y,
                  0, GL_RGBA, GL_UNSIGNED_BYTE, formattedBuffer);
-    free(formattedBuffer);
+    delete[] formattedBuffer;
     if(glGetError() == GL_OUT_OF_MEMORY)
     {
       glDeleteTextures(1, &data);

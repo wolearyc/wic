@@ -21,58 +21,29 @@
 /** \file */
 #ifndef PACKET_H
 #define PACKET_H
-#include <stdlib.h>
-#include <time.h>
-#include <string.h>
-#include <stdint.h>
-#include <arpa/inet.h>
-#include <netinet/in.h>
-#include <fcntl.h>
-#include <netdb.h>
-#include <arpa/inet.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <errno.h>
-#include <unistd.h>
-#include <vector>
-#include "Error.h"
+#include "Node.h"
 using std::string;
 using std::vector;
 namespace wic
 {
-  /** \brief the maximum length of names */
-  extern const uint8_t NAME_SIZE;
-  /** \brief a node ID */
-  typedef uint8_t NodeID;
-  /** \brief the server's ID (always 0) */
-  extern const NodeID SERVER_ID;
+
   /** \brief Data exchanged between a server and clients
-   *  
+   *
    *  A packet has a source (sender ID), a type (what sort of data is it),
-   *  a size (how much data is there), and finally a data payload. Due to 
+   *  a size (how much data is there), and finally a data payload. Due to
    *  the large amounts of data that must be processed, users should
    *  initialize objects for all types of packets. Recieved "mystery packets"
-   *  can be used to populate the data of specific packets. Specific packets can
-   *  be populated with user-defined populate methods and then sent over the
-   *  network.
+   *  can be used to construct specific packets.
    */
-  class Packet
+  
+  class AbstractPacket
   {
-    friend class Client;
-    friend class Server;
   public:
-    /** \brief Populate packet based on another
-     *  This method commonly used to convert a mystery packet into a more
-     *  workable form. The types of the two packets must agree.
-     *  \param other another packet
-     */
-    void populate(const Packet& other);
+    AbstractPacket();
     /** \brief Returns the data payload */
     vector<uint8_t> data() const;
     /** \brief Returns the ID of the sender */
     NodeID source() const;
-    /** \brief Determines whether or not another packet is of the same type */
-    bool isType(const Packet& other) const;
     /** \brief the type
      *  This method defines the type. When implementing specific packets, this
      *  function should return a unique constant.
@@ -83,38 +54,54 @@ namespace wic
      *  function should return a constant.
      */
     virtual uint8_t size() const = 0;
+    static const size_t HEADER_SIZE;
+    void toBuffer(uint8_t* dest, NodeID source) const;
   protected:
     vector<uint8_t> data_;
     NodeID source_;
-    static const size_t HEADER_SIZE;
-  private:
-    void toBuffer(uint8_t* dest, NodeID source) const;
+  };
+  
+  template <class Subclass> class Packet : public AbstractPacket
+  {
+  public:
+    Packet() {}
+    /** \brief Constructor
+     *  This method commonly used to convert a mystery packet into a more
+     *  workable form. The types of the two packets must agree.
+     *  \param other another packet
+     */
+    Packet(const AbstractPacket& other);
+    uint8_t type() const;
+    uint8_t size() const;
   };
   
   /** \brief Packet of undetermined type, typically recieved */
-  class MysteryPacket : public Packet
+  class MysteryPacket : public AbstractPacket
   {
-    friend class Client;
-    friend class Server;
   public:
+    using AbstractPacket::AbstractPacket;
+    void populate(uint8_t* src);
+    void populate(const AbstractPacket& other);
     uint8_t type() const;
     uint8_t size() const;
+    /** \brief Determines whether or not another packet is of the same type */
+    template <class PacketClass> bool isType() const;
   private:
-    void populate(uint8_t* src);
     uint8_t type_;
     uint8_t size_;
   };
   
+  
   /** \brief packet a client sendsto a server when requesting to join
    *  This packet contains the 21 byte name of the client.
    */
-  class JoinRequest : public Packet
+  class JoinRequest : public Packet<JoinRequest>
   {
   public:
-    using Packet::populate;
-    uint8_t type() const { return 0; }
-    uint8_t size() const { return 21; }
-    void populate(string name);
+    using Packet::Packet;
+    JoinRequest(string name);
+    static const uint8_t Type = 0;
+    static const uint8_t Size = 21;
     string name();
   };
   
@@ -127,14 +114,14 @@ namespace wic
    *  maximum number of nodes. The third byte is the new ID assigned to the
    *  client. The remainder of the data is the name of the server.
    */
-  class JoinResponse : public Packet
+  class JoinResponse : public Packet<JoinResponse>
   {
   public:
-    using Packet::populate;
-    uint8_t type() const { return 1; }
-    uint8_t size() const { return 24; }
-    void populate(uint8_t responseCode, uint8_t numNodes, NodeID assignedID,
-                  string serverName);
+    using Packet::Packet;
+    JoinResponse(uint8_t responseCode, uint8_t numNodes, NodeID assignedID,
+                 string serverName);
+    static const uint8_t Type = 1;
+    static const uint8_t Size = 24;
     /** \brief returns whether or not join is ok */
     bool ok() const;
     /** \brief returns whether or not join failed due to a full server */
@@ -156,13 +143,13 @@ namespace wic
    *  This packet contains 22 bytes of data. The first byte is the assigned ID
    *  of the new client. The remaining data is the name of the new client.
    */
-  class ClientJoined : public Packet
+  class ClientJoined : public Packet<ClientJoined>
   {
   public:
-    using Packet::populate;
-    uint8_t type() const { return 2; }
-    uint8_t size() const { return 22; }
-    void populate(NodeID newID, string newName);
+    using Packet::Packet;
+    ClientJoined(NodeID newID, string newName);
+    static const uint8_t Type = 2;
+    static const uint8_t Size = 22;
     /** \brief returns the new client's ID */
     NodeID newID() const;
     /** \brief returns the new client's name */
@@ -173,25 +160,26 @@ namespace wic
    *  This packet contains 22 bytes of data. The first byte is the ID
    *  of the existing client. The remaining data is the name of the existing client.
    */
-  class ClientInfo : public Packet
+  class ClientInfo : public Packet<ClientInfo>
   {
   public:
-    using Packet::populate;
-    uint8_t type() const { return 3; }
-    uint8_t size() const { return 22; }
-    void populate(NodeID ID, string name);
+    using Packet::Packet;
+    ClientInfo(NodeID ID, string name);
+    static const uint8_t Type = 3;
+    static const uint8_t Size = 22;
     /** \brief returns the existing client's ID */
     NodeID ID() const;
     /** \brief returns the existing client's name */
     string name() const;
   };
   /** \brief the packet sent from a client to a server when the client leaves */
-  class Leaving : public Packet
+  class Leaving : public Packet<Leaving>
   {
   public:
-    using Packet::populate;
-    uint8_t type() const { return 4; }
-    uint8_t size() const { return 0; }
+    using Packet::Packet;
+    Leaving();
+    static const uint8_t Type = 4;
+    static const uint8_t Size = 0;
   };
   /** \brief the reserved packet sent from a server to a client indicating that
    *         the client has been kicked
@@ -199,13 +187,13 @@ namespace wic
    *  This packet contains a 51 bytes, a string explaining the reason for the 
    *  kick.
    */
-  class Kick : public Packet
+  class Kick : public Packet<Kick>
   {
   public:
-    using Packet::populate;
-    uint8_t type() const { return 5; }
-    uint8_t size() const { return 51; }
-    void populate(string reason);
+    using Packet::Packet;
+    Kick(string reason);
+    static const uint8_t Type = 5;
+    static const uint8_t Size = 51;
     /** \brief returns the reason for the kick */
     string reason() const;
   };
@@ -214,13 +202,13 @@ namespace wic
    *
    *  This packet contains a 51 byte string explaining the reason for the ban.
    */
-  class Ban : public Packet
+  class Ban : public Packet<Ban>
   {
   public:
-    using Packet::populate;
-    uint8_t type() const { return 6; }
-    uint8_t size() const { return 51; }
-    void populate(string reason);
+    using Packet::Packet;
+    Ban(string reason);
+    static const uint8_t Type = 6;
+    static const uint8_t Size = 51;
     /** \brief returns the reason for the ban */
     string reason() const;
   };
@@ -232,13 +220,13 @@ namespace wic
    *  the client left normally, was kicked, or was banned. The remaining data
    *  is the reason for the kick/ban, if applicable. 
    */
-  class ClientLeft : public Packet
+  class ClientLeft : public Packet<ClientLeft>
   {
   public:
-    using Packet::populate;
-    uint8_t type() const { return 7; }
-    uint8_t size() const { return 53; }
-    void populate(NodeID oldID, uint8_t leaveCode, string reason);
+    using Packet::Packet;
+    ClientLeft(NodeID oldID, uint8_t leaveCode, string reason);
+    static const uint8_t Type = 7;
+    static const uint8_t Size = 53;
     NodeID oldID() const;
     bool normal() const;
     bool kicked() const;
@@ -251,12 +239,14 @@ namespace wic
   /** \brief the packet sent from a server to clients indicating that the
    *         server has shut down
    */
-  class Shutdown : public Packet
+  class Shutdown : public Packet<Shutdown>
   {
   public:
-    using Packet::populate;
-    uint8_t type() const { return 8; }
-    uint8_t size() const { return 0; }
+    using Packet::Packet;
+    Shutdown();
+    static const uint8_t Type = 8;
+    static const uint8_t Size = 0; 
   };
+  
 }
 #endif

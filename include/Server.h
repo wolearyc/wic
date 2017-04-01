@@ -21,10 +21,7 @@
 /** \file */
 #ifndef SERVER_H
 #define SERVER_H
-#include "Error.h"
 #include "Packet.h"
-using std::string;
-using std::vector;
 namespace wic
 {
   /** \brief a simple UDP server that connects to multiple clients
@@ -35,7 +32,7 @@ namespace wic
    *  implemented by users by pulling recieved packets out of a Server and 
    *  processing them accordingly.
    */
-  class Server
+  class Server : public Node
   {
   public:
     /** \brief Constructor (starts server)
@@ -50,16 +47,16 @@ namespace wic
      *  \param packet the packet to send
      *  \param destID the ID of the recipient
      */
-    void send(const Packet& packet, NodeID destID) const;
+    void send(const AbstractPacket& packet, NodeID destID) const;
     /** \brief sends a packet to all but one clients
      *  \param packet the packet to send
      *  \param excludeID the ID of the excluded client
      */
-    void sendExclude(const Packet& packet, NodeID excludeID) const;
+    void sendExclude(const AbstractPacket& packet, NodeID excludeID) const;
     /** \brief broadcasts a packet to all clients
      *  \param packet the packet to send
      */
-    void sendAll(const Packet& packet) const;
+    void sendAll(const AbstractPacket& packet) const;
     /** \brief fetches and processes a single recieved packet
      *  \param result the destination of the received packet
      *  \return true if packet recieved, false otherwise
@@ -90,15 +87,8 @@ namespace wic
     /** \brief returns the ID of the client with a name or IP address */
     NodeID getID(string nameOrIP) const;
   private:
-    string name_;
-    uint8_t maxNodes_;
-    vector<bool> used_;
-    vector<string> names_;
     vector<string> ips_;
     vector<string> blacklist_;
-    int socket_;
-    socklen_t lenAddr_;
-    struct sockaddr_in addr_;
     vector<struct sockaddr_in> addrs_;
   };
 }

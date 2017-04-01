@@ -21,59 +21,21 @@
 #include "Client.h"
 namespace wic
 {
-  static const size_t bufferSize = 256; // utility buffer size
-  static uint8_t buffer[bufferSize];    // utility buffer
-  
-  // Utility packets
-  static JoinResponse joinResponse;
-  static ClientJoined clientJoined;
-  static ClientInfo clientInfo;
-  static Kick kick;
-  static Ban ban;
-  static Shutdown shutdown;
-  static ClientLeft clientLeft;
-  
+  const size_t BUFFER_SIZE_ = 255;
+  uint8_t buffer_[255];
+
   Client::Client(string name, unsigned serverPort, string serverIP,
                  double timeout)
-  : joined_(false), ID_(0), name_(""), maxNodes_(0), socket_(0),
-    lenAddr_(sizeof(sockaddr_in))
+  : Node(name, 0)
   {
-    if(name.length() > 20)
-      throw InvalidArgument("name", "limited to 20 characters");
-    name_ = name;
-    
-    if(serverPort < 1025)
-      throw InvalidArgument("port", "only ports above 1024 are allowed");
-    
-    bzero(&addr_, sizeof(addr_));
-    bzero(&serverAddr_, sizeof(serverAddr_));
-
-    // Bind socket
-    socket_ = socket(AF_INET, SOCK_DGRAM, 0);
-    if(socket_ == -1)
-      throw InternalError("socket initialization failed");
-    fcntl(socket_, F_SETFL, O_NONBLOCK);
-    addr_.sin_family = AF_INET;
-    addr_.sin_addr.s_addr = htonl(INADDR_ANY);
-    addr_.sin_port = htons(0);
-    int result = bind(socket_, (struct sockaddr*) &addr_, sizeof(addr_));
-    if(result == -1)
-    {
-      close(socket_);
-      if(errno == EADDRINUSE)
-        throw Failure("port is already in use");
-      else
-        throw InternalError("socket bind failed");
-    }
-    
     // Initialize server address
+    bzero(&serverAddr_, sizeof(serverAddr_));
     serverAddr_.sin_family = AF_INET;
     serverAddr_.sin_addr.s_addr = inet_addr(serverIP.data());
     serverAddr_.sin_port = htons(serverPort);
     
     // Send a join request
-    JoinRequest pkt;
-    pkt.populate(name_);
+    JoinRequest pkt(name_);
     send(pkt);
     
     // Wait for, then process, the server's response
@@ -82,19 +44,18 @@ namespace wic
     {
       struct sockaddr_in recvAddr;
       socklen_t tmpLen = sizeof(recvAddr);
-      ssize_t length = recvfrom(socket_, buffer, bufferSize, 0,
+      ssize_t length = recvfrom(socket_, buffer_, BUFFER_SIZE_, 0,
                                 (struct sockaddr*) &recvAddr, &tmpLen);
       // Process anything recieved
       if(length > 0)
       {
         // Populate a mystery packet
         MysteryPacket pkt;
-        pkt.populate(buffer);
-        
-        if(pkt.isType(joinResponse))
+        pkt.populate((buffer_));
+        if(pkt.isType<JoinResponse>())
         {
           // Process the recieved join response
-          joinResponse.populate(pkt);
+          JoinResponse joinResponse(pkt);
           if(joinResponse.ok())
           {
             // Join successful, set everything up
@@ -123,21 +84,20 @@ namespace wic
   {
     Leaving pkt = Leaving();
     send(pkt);
-    joined_ = false;
     close(socket_);
   }
-  void Client::send(const Packet& packet) const
+  void Client::send(const AbstractPacket& packet) const
   {
-    size_t size = Packet::HEADER_SIZE + packet.size();
-    packet.toBuffer(buffer, ID_);
-    sendto(socket_, buffer, size, 0, (struct sockaddr*) &serverAddr_, lenAddr_);
+    size_t size = AbstractPacket::HEADER_SIZE + packet.size();
+    packet.toBuffer(buffer_, ID_);
+    sendto(socket_, buffer_, size, 0, (struct sockaddr*) &serverAddr_, lenAddr_);
   }
   bool Client::recv(MysteryPacket& result)
   {
     // Pull data from the socket
     struct sockaddr_in recvAddr;
     socklen_t tmpLen = sizeof(recvAddr);
-    ssize_t length = recvfrom(socket_, buffer, bufferSize, 0,
+    ssize_t length = recvfrom(socket_, buffer_, BUFFER_SIZE_, 0,
                               (struct sockaddr*) &recvAddr, &tmpLen);
     if(length > 0)
     {
@@ -145,30 +105,30 @@ namespace wic
       if(recvAddr.sin_addr.s_addr == serverAddr_.sin_addr.s_addr &&
          recvAddr.sin_port == serverAddr_.sin_port)
       {
-        result.populate(buffer);
+        result.populate(buffer_);
         
         // Characterize and process the mystery packet
-        if(result.isType(clientJoined))
+        if(result.isType<ClientJoined>())
         {
-          clientJoined.populate(result);
+          ClientJoined clientJoined(result);
           used_[clientJoined.newID()] = true;
           names_[clientJoined.newID()] = clientJoined.newName();
         }
-        else if(result.isType(clientInfo))
+        else if(result.isType<ClientInfo>())
         {
-          clientInfo.populate(result);
+          ClientInfo clientInfo(result);
           used_[clientInfo.ID()] = true;
           names_[clientInfo.ID()] = clientInfo.name();
         }
-        else if(result.isType(kick) ||
-                result.isType(ban)  ||
-                result.isType(shutdown))
+        else if(result.isType<Kick>() ||
+                result.isType<Ban>()  ||
+                result.isType<Shutdown>())
         {
           joined_ = false;
         }
-        else if(result.isType(clientLeft))
+        else if(result.isType<ClientLeft>())
         {
-          clientLeft.populate(result);
+          ClientLeft clientLeft(result);
           used_[clientLeft.oldID()] = false;
         }
         return true;
@@ -176,29 +136,5 @@ namespace wic
       throw Error("packet recieved from unknown source");
     }
     return false;
-  }
-  NodeID Client::ID() const
-  {
-    return ID_;
-  }
-  string Client::name() const
-  {
-    return name_;
-  }
-  NodeID Client::getMaxID() const
-  {
-    return maxNodes_;
-  }
-  bool Client::isUsed(NodeID ID)
-  {
-    if(ID > getMaxID())
-      return false;
-    return used_[ID];
-  }
-  string Client::getName(NodeID ID)
-  {
-    if(!isUsed(ID))
-      throw InvalidArgument("ID", "ID is not associated with any client");
-    return names_[ID];
   }
 }

@@ -22,7 +22,7 @@ release: $(OBJECTS)
 obj/release/%.o: src/%.cpp
 	mkdir -p bin/release/
 	mkdir -p obj/release/
-	$(CC) $(CFLAGS) $(COPTIONS) -c $< -o $@ $(INCLUDEPATHS)
+	$(CC) -O2 $(CFLAGS) $(COPTIONS) -c $< -o $@ $(INCLUDEPATHS)
 
 debug: $(DOBJECTS)
 	ar -r bin/debug/libwic.a obj/debug/*.o deps/lib/*.o

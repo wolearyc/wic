@@ -33,8 +33,8 @@ namespace wic
   : Error(filepath + " could not be loaded")
   {
   }
-  InvalidArgument::InvalidArgument(string name, string help)
-  : std::invalid_argument("invalid: " + name + " | " + help)
+  InvalidArgument::InvalidArgument(string name, string condition)
+  : std::invalid_argument("\""+name+"\" cannot be " + condition)
   {
   }
 }
