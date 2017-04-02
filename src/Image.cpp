@@ -92,4 +92,8 @@ namespace wic
     glEnd();
     glDisable(GL_TEXTURE_2D);
   }
+  Bounds Image::getWholeBounds()
+  {
+    return Bounds(Pair(), texture->getDimensions());
+  }
 }

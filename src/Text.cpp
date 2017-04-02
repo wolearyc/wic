@@ -32,7 +32,8 @@ namespace wic
     offsets.resize(str.length());
     images.resize(str.length());
 
-    bounds = update();
+    update();
+    bounds = getWholeBounds();
   }
   Text::Text()
   : Locateable(), Rotateable(), Scaleable(), Colorable(), Bounded(), Drawable(),
@@ -78,20 +79,20 @@ namespace wic
     }
   }
   /* populates offsets and images and return the bounds */
-  Bounds Text::update()
+  void Text::update()
   {
-    double x = 0, min_y = 0, max_y = 0;
-    int previous_glyph_index = 0;
-    bool do_kerning = FT_HAS_KERNING(font->face);
+    double x = 0, minY = 0, maxY = 0;
+    int previousGlyphIndex = 0;
+    bool doKerning = FT_HAS_KERNING(font->face);
     for(size_t i = 0; i < str.length(); i++)
     {
       char c = str[i];
-      int glyph_index = FT_Get_Char_Index(font->face, c);
-      FT_Load_Glyph(font->face, glyph_index, 0);
-      if(do_kerning && previous_glyph_index != 0)
+      int glyphIndex = FT_Get_Char_Index(font->face, c);
+      FT_Load_Glyph(font->face, glyphIndex, 0);
+      if(doKerning && previousGlyphIndex != 0)
       {
         FT_Vector delta;
-        FT_Get_Kerning(font->face, previous_glyph_index, glyph_index,
+        FT_Get_Kerning(font->face, previousGlyphIndex, glyphIndex,
                        FT_KERNING_UNFITTED, &delta);
         x += delta.x;
       }
@@ -99,11 +100,11 @@ namespace wic
                                         font->face->glyph->metrics.height) / 64);
       x += font->face->glyph->advance.x / 64;
       if(-font->face->glyph->metrics.height +
-         font->face->glyph->metrics.horiBearingY < min_y)
-        min_y = -font->face->glyph->metrics.height +
+         font->face->glyph->metrics.horiBearingY < minY)
+        minY = -font->face->glyph->metrics.height +
         font->face->glyph->metrics.horiBearingY;
-      if(font->face->glyph->metrics.horiBearingY > max_y)
-        max_y = font->face->glyph->metrics.horiBearingY;
+      if(font->face->glyph->metrics.horiBearingY > maxY)
+        maxY = font->face->glyph->metrics.horiBearingY;
     }
     for(size_t i = 0; i < str.length(); i++)
     {
@@ -116,6 +117,10 @@ namespace wic
         images[i].drawCentered = true;
       }
     }
-    return Bounds(Pair(0.0, min_y / 64), Pair(x, max_y / 64));
+    wholeBounds = Bounds(Pair(0.0, minY / 64), Pair(x, maxY / 64));
+  }
+  Bounds Text::getWholeBounds()
+  {
+    return wholeBounds;
   }
 }

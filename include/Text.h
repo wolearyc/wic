@@ -47,6 +47,7 @@ namespace wic
     Text(const Text& other);
     ~Text();
     void draw(const Game& game);
+    Bounds getWholeBounds();
     /** Sets the string to render and sets the bounds to display the entire
      *  string.
      *  \param str the new string to render
@@ -55,11 +56,12 @@ namespace wic
     /** Returns the current rendered string. */
     string getString() const;
   private:
-    Bounds update();        // Updates offsets and returns new overall bounds.
+    void update();        // Updates offsets and returns new overall bounds.
     string str;             
     vector<Pair> offsets;   // the offsets of each glyph from location
     vector<Image> images;   // the glyph images
     const Font* font;
+    Bounds wholeBounds;
   };
 }
 #endif

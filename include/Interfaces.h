@@ -106,6 +106,8 @@ namespace wic
     /** Copy constructor. */
     Bounded(const Bounded& other);
     Bounds bounds; /**< the bounds. */
+    /** Returns the whole bounds */
+    virtual Bounds getWholeBounds() = 0;
   };
   /** An object that can be drawn to the screen. */
   class Drawable
