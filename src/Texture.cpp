@@ -23,17 +23,17 @@ namespace wic
 {
   Texture::Texture(unsigned char* buffer, Pair dimensions, enum Format format,
                    enum Filter filter, enum Wrap wrap)
-  : dimensions_(dimensions)
+  : dimensions(dimensions)
   {
-    if(!buffer)
+    if(buffer == nullptr)
       throw InvalidArgument("buffer", "should not be null");
-    if(dimensions_.x < 1)
-      throw InvalidArgument("dimensions.x", "should be nonzero");
-    if(dimensions_.y < 1)
-      throw InvalidArgument("dimensions.y", "should be nonzero");
+    if(dimensions.x < 1)
+      throw InvalidArgument("dimensions.x", "zero");
+    if(dimensions.y < 1)
+      throw InvalidArgument("dimensions.y", "zero");
     
-    int xDimension = (int) (dimensions_.x) * 4;
-    int yDimension = (int) dimensions_.y;
+    int xDimension = (int) (dimensions.x) * 4;
+    int yDimension = (int) dimensions.y;
     unsigned char** temp = new unsigned char*[xDimension];
     for(int x = 0; x < xDimension; x++)
       temp[x] = new unsigned char[yDimension];
@@ -97,8 +97,7 @@ namespace wic
     }
     for(int x = 0; x < xDimension; x++)
       delete[] temp[x];
-    delete [] temp;
-    unsigned int data;
+    delete[] temp;
     glGenTextures(1, &data);
     glBindTexture(GL_TEXTURE_2D, data);
     if(wrap == Wrap::Stop)
@@ -119,32 +118,29 @@ namespace wic
       glDeleteTextures(1, &data);
       throw Error("out of GPU memory");
     }
-    
-    data_ = data;
-    dimensions_ = dimensions;
   }
   Texture::Texture(string filepath, enum Filter filter, enum Wrap wrap)
   {
-    unsigned char* buffer = 0;
+    unsigned char* buffer = nullptr;
     int x = 0;
     int y = 0;
     buffer = SOIL_load_image(filepath.data(), &x, &y, 0, SOIL_LOAD_RGBA);
     Pair dimensions(x,y);
-    if(!buffer)
+    if(buffer == nullptr)
       throw InvalidFile(filepath);
     Texture(buffer, dimensions, Format::RGBA, filter, wrap);
     SOIL_free_image_data(buffer);
   }
   Texture::Texture()
-  : data_(0), dimensions_(Pair())
+  : data(0), dimensions(Pair())
   {
   }
   Texture::~Texture()
   {
-    glDeleteTextures(1, &data_);
+    glDeleteTextures(1, &data);
   }
   Pair Texture::getDimensions() const
   {
-    return dimensions_;
+    return dimensions;
   }
 }

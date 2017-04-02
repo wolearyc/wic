@@ -25,21 +25,11 @@
 #include "Packet.h"
 namespace wic
 {
-  /** \brief a UDP client that connects to a server
-   *
-   *  A Client sends and recieves packets to and from the server. It handles
-   *  certain low-level functions, such as joining and leaving.
-   *  More advanced features should be implemented by pulling recieved packets
-   *  out of a client and processing them accordingly. 
-   *
-   *  Each client has an unique nonzero ID assigned by the server. Every client
-   *  also possesses a name (username), which need not be unique and can
-   *  can certainly be empty.
-   */
+  /** A client node that connects to a server node. */
   class Client : public Node
   {
   public:
-    /** \brief Constructor (joins server)
+    /** Constructor (joins server).
      *  \param name the username; limited to 20 characters
      *  \param serverPort the server port number; must be > 1024
      *  \param serverIP the server IP address
@@ -47,17 +37,17 @@ namespace wic
      */
     Client(string name, unsigned serverPort, string serverIP, double timeout);
     ~Client();
-    /** \brief sends a packet to the server
+    /** Sends a packet to the server.
      *  \param packet the packet to send
      */
     void send(const AbstractPacket& packet) const;
-    /** \brief attempts to fetch and process a single packet from the server
+    /** Attempts to recieve a single packet.
      *  \param result the destination of recieved packet
      *  \return true if packet recieved, false otherwise
      */
     bool recv(MysteryPacket& result);
   private:
-    struct sockaddr_in serverAddr_;
+    struct sockaddr_in serverAddr;
   };
 }
 #endif

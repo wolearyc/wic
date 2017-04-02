@@ -21,56 +21,59 @@
 #include "Node.h"
 namespace wic
 {
-  const uint8_t Node::NAME_LEN = 20;
   Node::Node(string name, unsigned socketPort)
-  : joined_(false), ID_(0), name_(name), maxNodes_(0), socket_(0),
-    lenAddr_(sizeof(sockaddr_in))
+  : joined(false), ID(0), name(name), maxID(0), sock(0),
+    lenAddr(sizeof(sockaddr_in))
   {
-    if(name_.length() > NAME_LEN)
-      throw InvalidArgument("name", "> " + std::to_string(NAME_LEN));
+    if(name.length() > MAX_NAME_LEN)
+      throw InvalidArgument("name", "> " + std::to_string(MAX_NAME_LEN));
     if(socketPort < 1025)
       throw InvalidArgument("port", "< 1025");
     
-    socket_ = socket(AF_INET, SOCK_DGRAM, 0);
-    if(socket_ == -1)
-      throw InternalError("socket initialization error");
-    fcntl(socket_, F_SETFL, O_NONBLOCK);
-    bzero(&addr_, lenAddr_);
-    addr_.sin_family = AF_INET;
-    addr_.sin_addr.s_addr = htonl(INADDR_ANY);
-    addr_.sin_port = htons(socketPort);
-    int result = bind(socket_, (struct sockaddr*) &addr_, lenAddr_);
+    sock = socket(AF_INET, SOCK_DGRAM, 0);
+    if(sock == -1)
+      throw InternalError("socket could not initialize");
+    fcntl(sock, F_SETFL, O_NONBLOCK);
+    bzero(&addr, lenAddr);
+    addr.sin_family = AF_INET;
+    addr.sin_addr.s_addr = htonl(INADDR_ANY);
+    addr.sin_port = htons(socketPort);
+    int result = bind(sock, (struct sockaddr*) &addr, lenAddr);
     if(result == -1)
     {
-      close(socket_);
+      close(sock);
       if(errno == EADDRINUSE)
         throw Failure("port already in use");
       else
-        throw InternalError("socket binding error");
+        throw InternalError("socket could not bind");
     }
   }
-  NodeID Node::ID() const
+  NodeID Node::getID() const
   {
-    return ID_;
+    return ID;
   }
-  string Node::name() const
+  string Node::getName() const
   {
-    return name_;
+    return name;
   }
   NodeID Node::getMaxID() const
   {
-    return maxNodes_;
+    return maxID;
+  }
+  uint8_t Node::getMaxNodes() const
+  {
+    return 1 + maxID;
   }
   bool Node::isUsed(NodeID ID) const
   {
-    if(ID > getMaxID())
+    if(ID > maxID)
       return false;
-    return used_[ID];
+    return used[ID];
   }
-  string Node::getName(NodeID ID) const
+  string Node::getNodeName(NodeID ID) const
   {
-    if(!isUsed(ID))
-      throw InvalidArgument("ID", "unused");
-    return names_[ID];
+    return names[ID];
   }
+  const uint8_t Node::MAX_NAME_LEN = 20;
+
 }

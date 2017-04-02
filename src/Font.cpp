@@ -22,19 +22,17 @@
 namespace wic
 {
   Font::Font(string filepath, unsigned point, bool antialias, const Game& game)
+  : point(point), antialias(antialias)
   {
-    if(!point)
-      throw InvalidArgument("point", "point must be > 0");
-    FT_Face face;
-    int error = FT_New_Face(game.FTLibrary_, filepath.data(), 0, &face);
+    if(point == 0)
+      throw InvalidArgument("point", "zero");
+    int error = FT_New_Face(game.FTLibrary, filepath.data(), 0, &face);
     if(error != 0)
       throw InvalidFile(filepath);
     
-    bzero(textures_, NumChars * sizeof(Texture*));
-
-    FT_Set_Char_Size(face, 0, point*64, game.pixelDensity_.x,
-                     game.pixelDensity_.y);
-    for(unsigned char c = 0; c < NumChars; c++)
+    Pair pixelDensity = game.getPixelDensity();
+    FT_Set_Char_Size(face, 0, point*64, pixelDensity.x, pixelDensity.y);
+    for(unsigned char c = 0; c < NUM_CHARS; c++)
     {
       int glyph_index = FT_Get_Char_Index(face, c);
       if(antialias)
@@ -46,10 +44,9 @@ namespace wic
         if(!FT_Render_Glyph(face->glyph, FT_RENDER_MODE_NORMAL) &&
            face->glyph->bitmap.buffer != 0)
         {
-          Pair dimensions = Pair(face->glyph->bitmap.width,
-                                 face->glyph->bitmap.rows);
-          textures_[c] = Texture(face->glyph->bitmap.buffer, dimensions,
-                                 Format::Grayscale, Filter::Nearest, Wrap::Stop);
+          Pair dimensions(face->glyph->bitmap.width, face->glyph->bitmap.rows);
+          textures[c] = Texture(face->glyph->bitmap.buffer, dimensions,
+                                Format::Grayscale, Filter::Nearest, Wrap::Stop);
         }
       }
       else
@@ -59,27 +56,23 @@ namespace wic
         {
           FT_Bitmap target;
           FT_Bitmap_New(&target);
-          int error = FT_Bitmap_Convert(game.FTLibrary_,
+          int error = FT_Bitmap_Convert(game.FTLibrary,
                                         &face->glyph->bitmap,
                                         &target, 1);
           Pair dimensions(target.width, target.rows);
-          textures_[c] = Texture(target.buffer, dimensions, Format::Mono,
-                                 Filter::Nearest,Wrap::Stop);
-          FT_Bitmap_Done(game.FTLibrary_, &target);
+          textures[c] = Texture(target.buffer, dimensions, Format::Mono,
+                                Filter::Nearest, Wrap::Stop);
+          FT_Bitmap_Done(game.FTLibrary, &target);
         }
       }
     }
-
-    face_ = face;
-    point_ = point;
-    antialias_ = antialias;
   }
   Font::Font()
-  : face_(0), point_(0), antialias_(false)
+  : face(0), point(0), antialias(false)
   {
   }
   Font::~Font()
   {
-    FT_Done_Face(face_);
+    FT_Done_Face(face);
   }
 }

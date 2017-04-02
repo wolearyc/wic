@@ -28,37 +28,38 @@ using std::string;
 using std::vector;
 namespace wic
 {
-  /** \brief horizontal text that can be drawn to the screen */
+  /** Horizontal text. */
   class Text
   : public Locateable, public Rotateable, public Scaleable, public Colorable,
     public Bounded, public Drawable
   {
   public:
-    /** \brief Constructor
-     *  \param location_ the desired screen location
-     *  \param str the desired string to render
-     *  \param font the desired font
-     *  \param color_ the desired color
+    /** Constructor.
+     *  \param location the screen location
+     *  \param str the string to render
+     *  \param font the font
+     *  \param color the color
      */
-    Text(Pair location_, string str, const Font* font, Color color_);
-    /** \brief Default constructor */
+    Text(Pair location, string str, const Font* font, Color color);
+    /** Default constructor. */
     Text();
-    /** \brief Copy constructor */
+    /** Copy constructor. */
     Text(const Text& other);
     ~Text();
     void draw(const Game& game);
-    /** \brief sets the string to render
+    /** Sets the string to render and sets the bounds to display the entire
+     *  string.
      *  \param str the new string to render
      */
     void setString(string str);
-    /** \brief gets the current string */
+    /** Returns the current rendered string. */
     string getString() const;
   private:
-    Bounds getData();
-    string str_;             
-    vector<Pair> offsets_;   // the offsets of each glyph from location
-    vector<Image> images_;   // the glyph images
-    const Font* font_;
+    Bounds update();        // Updates offsets and returns new overall bounds.
+    string str;             
+    vector<Pair> offsets;   // the offsets of each glyph from location
+    vector<Image> images;   // the glyph images
+    const Font* font;
   };
 }
 #endif

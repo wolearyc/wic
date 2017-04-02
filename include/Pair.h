@@ -24,166 +24,164 @@
 #include <cmath>
 namespace wic
 {
-  /** \brief holds an x and a y double precision floating point value
-   *
-   *  Pair is the workhorse of wic. A Pair can represent 2D dimensions, a 2D
-   *  vector, 2D scaling information, and, most commonly, coordinates. Typical
-   *  vector arithmetic can be performed between pairs.
+  /** A 2D vector. Pair is the workhorse of wic. A Pair can represent 2D 
+   *  dimensions, a 2D vector, 2D scaling information, and, most commonly, 
+   *  coordinates. Typical vector arithmetic can be performed between pairs.
    */
   class Pair
   {
   public:
-    double x; /**< \brief the x coordinate/x dimension/x component etc. */
-    double y; /**< \brief the y coordinate/y dimension/y component etc. */
-    /** \brief Constructor
-     * \param x_ the desired x coordinate/x dimension/x component etc.
-     * \param y_ the desired y coordinate/y dimension/y component etc.
+    double x; /**< The x coordinate/x dimension/x component etc. */
+    double y; /**< The y coordinate/y dimension/y component etc. */
+    /** Constructor.
+     *  \param x the x coordinate/x dimension/x component etc.
+     *  \param y the y coordinate/y dimension/y component etc.
      */
-    Pair(double x_, double y_);
-    /** \brief Constructor
-     * \param x_ the desired x coordinate/x dimension/x component etc.
-     * \param y_ the desired y coordinate/y dimension/y component etc.
+    Pair(double x, double y);
+    /** Constructor.
+     *  \param x the x coordinate/x dimension/x component etc.
+     *  \param y the y coordinate/y dimension/y component etc.
      */
-    Pair(int x_, int y_);
-    /** \brief Default constructor {0,0} */
+    Pair(int x, int y);
+    /** Default constructor (0,0). */
     Pair();
-    /** \brief Copy constructor */
+    /** Copy constructor. */
     Pair(const Pair& other);
-    /** \brief computes the distance to another Pair
-     * \param other another Pair
-     * \return the distance between the Pairs, in whatever units the Pairs
+    /** Computes the distance to another Pair
+     *  \param other another Pair
+     *  \return the distance between the Pairs, in whatever units the Pairs
      *         used
      */
     double distance(const Pair& other) const;
-    /** \brief computes the angle to another Pair
-     * \param other another Pair
-     * \return the angle, in radians measured from the positive x axis
+    /** Computes the angle to another Pair
+     *  \param other another Pair
+     *  \return the angle, in radians measured from the positive x axis
      */
     double angle(const Pair& other) const;
-    /** \brief computes the norm
+    /** Computes the norm.
      *  \return the norm of the Pair
      */
     double norm() const;
-    /** \brief transforms the pair based on a rotation, scale, and center
+    /** Transforms the pair based on a rotation, scale, and center.
      *  \param rotation the rotation
      *  \param scale the scale
      *  \param center the center to rotate and scale around
      */
     void transform(double rotation, Pair scale, Pair center);
-    /** \brief defines addition between Pairs
-     * \param other another Pair
-     * \return the component-wise sum of the Pairs
+    /** Defines addition between Pairs.
+     *  \param other another Pair
+     *  \return the component-wise sum of the Pairs
      */
     Pair operator+(const Pair& other) const;
-    /** \brief defines subraction between Pairs
-     * \param other another Pair
-     * \return the component-wise difference between the Pairs
+    /** Defines subraction between Pairs
+     *  \param other another Pair
+     *  \return the component-wise difference between the Pairs
      */
     Pair operator-(const Pair& other) const;
-    /** \brief defines multiplication between Pairs
-     * \param other another Pair
-     * \return the component-wise product of the Pairs
+    /** Defines multiplication between Pairs.
+     *  \param other another Pair
+     *  \return the component-wise product of the Pairs
      */
     Pair operator*(const Pair& other) const;
-    /** \brief defines division between Pairs
-     * \param other another Pair
-     * \return the component-wise quotient of the Pairs
+    /** Defines division between Pairs.
+     *  \param other another Pair
+     *  \return the component-wise quotient of the Pairs
      */
     Pair operator/(const Pair& other) const;
-    /** \brief defines addition assignment between Pairs
-     * \param other another Pair
-     * \return the final added Pair
+    /** Defines addition assignment between Pairs.
+     *  \param other another Pair
+     *  \return the final added Pair
      */
     Pair operator+=(const Pair& other);
-    /** \brief defines subraction assignment between Pairs
-     * \param other another Pair
-     * \return the final subtracted Pair
+    /** Defines subraction assignment between Pairs.
+     *  \param other another Pair
+     *  \return the final subtracted Pair
      */
     Pair operator-=(const Pair& other);
-    /** \brief defines multiplication assignment between Pairs
-     * \param other another Pair
-     * \return the final multiplied Pair
+    /** Defines multiplication assignment between Pairs.
+     *  \param other another Pair
+     *  \return the final multiplied Pair
      */
     Pair operator*=(const Pair& other);
-    /** \brief defines division assiment between Pairs
-     * \param other another Pair
-     * \return the final divided Pair
+    /** Defines division assiment between Pairs.
+     *  \param other another Pair
+     *  \return the final divided Pair
      */
     Pair operator/=(const Pair& other);
-    /** \brief defines equality operator between Pairs
-     * \param other another Pair
-     * \return true if both Pairs' respective components are within epsilon
-     *         (0.0000001), false otherwise
+    /** Defines equality operator between Pairs.
+     *  \param other another Pair
+     *  \return true if both Pairs' respective components are within epsilon
+     *          (0.0000001), false otherwise
      */
     bool operator==(const Pair& other) const;
-    /** \brief defines the inequality operator between Pairs
-     * \param other another Pair
-     * \return false if both Pairs' respective components are within
-     *         epsilon (0.0000001), true otherwise
+    /** Defines the inequality operator between Pairs.
+     *  \param other another Pair
+     *  \return false if both Pairs' respective components are within
+     *          epsilon (0.0000001), true otherwise
      */
     bool operator!=(const Pair& other) const;
-    /** \brief defines the greater than or equal to operator between Pairs
-     * \param other another Pair
-     * \return true if the Pair's respective components are both greater
+    /** Defines the greater than or equal to operator between Pairs.
+     *  \param other another Pair
+     *  \return true if the Pair's respective components are both greater
      *         than or equal to the components of the other Pair
      */
     bool operator>=(const Pair& other) const;
-    /** \brief defines the greater than operator between Pairs
-     * \param other another Pair
-     * \return true if the Pair's respective components are both greater
+    /** Defines the greater than operator between Pairs.
+     *  \param other another Pair
+     *  \return true if the Pair's respective components are both greater
      *         than to the components of the other Pair
      */
     bool operator>(const Pair& other) const;
-    /** \brief defines the less than or equal to operator between Pairs
-     * \param other another Pair
-     * \return true if the Pair's respective components are both less than
+    /** Defines the less than or equal to operator between Pairs.
+     *  \param other another Pair
+     *  \return true if the Pair's respective components are both less than
      *         or equal to the components of the other Pair
      */
     bool operator<=(const Pair& other) const;
-    /** \brief defines the less than operator between Pairs
-     * \param other another Pair
-     * \return true if the Pair's respective components are both greater
+    /** Defines the less than operator between Pairs.
+     *  \param other another Pair
+     *  \return true if the Pair's respective components are both greater
      *         than or equal to the components of the other Pair
      */
     bool operator<(const Pair& other) const;
-    /** \brief defines addition between a Pair and a double
-     * \param i a double
-     * \return the Pair with the double added to both components
+    /** Defines addition between a Pair and a double.
+     *  \param i a double
+     *  \return the Pair with the double added to both components
      */
     Pair operator+(const double i) const;
-    /** \brief defines subtraction between a Pair and a double
-     * \param i a double
-     * \return the Pair with the double subtracted from both components
+    /** Defines subtraction between a Pair and a double.
+     *  \param i a double
+     *  \return the Pair with the double subtracted from both components
      */
     Pair operator-(const double i) const;
-    /** \brief defines multiplication between a Pair and a double
-     * \param i a double
-     * \return the Pair with the double multiplied by both components
+    /** Defines multiplication between a Pair and a double.
+     *  \param i a double
+     *  \return the Pair with the double multiplied by both components
      */
     Pair operator*(const double i) const;
-    /** \brief defines division between a Pair and a double
+    /** Defines division between a Pair and a double.
      * \param i a double
      * \return the Pair with the double divided into  both components
      */
     Pair operator/(const double i) const;
-    /** \brief defines addition assignment between a Pair and a double
-     * \param i a double
-     * \return the final added Pair
+    /** Defines addition assignment between a Pair and a double.
+     *  \param i a double
+     *  \return the final added Pair
      */
     Pair operator+=(const double i);
-    /** \brief defines subtraction assignment between a Pair and a double
-     * \param i a double
-     * \return the final subtracted Pair
+    /** Defines subtraction assignment between a Pair and a double.
+     *  \param i a double
+     *  \return the final subtracted Pair
      */
     Pair operator-=(const double i);
-    /** \brief defines multiplication assignment between a Pair and a double
-     * \param i a double
-     * \return the final multiplied Pair
+    /** Defines multiplication assignment between a Pair and a double.
+     *  \param i a double
+     *  \return the final multiplied Pair
      */
     Pair operator*=(const double i);
-    /** \brief defines division assignment between a Pair and a double
-     * \param i a double
-     * \return the final divided Pair
+    /** Defines division assignment between a Pair and a double.
+     *  \param i a double
+     *  \return the final divided Pair
      */
     Pair operator/=(const double i);
   };

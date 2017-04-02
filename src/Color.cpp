@@ -40,22 +40,20 @@ namespace wic
   const Color Color::Purple    = Color(128,0,128);
   const Color Color::WicOrange = Color(253,144,11,255);
   const Color Color::WicGray   = Color(63,63,63,255);
-  Color::Color(uint8_t red_, uint8_t green_, uint8_t blue_,
-               uint8_t alpha_) 
-  :red(red_), green(green_), blue(blue_), alpha(alpha_)
+  Color::Color(uint8_t red, uint8_t green, uint8_t blue, uint8_t alpha)
+  : red(red), green(green), blue(blue), alpha(alpha)
   {
   }
-  Color::Color(uint8_t red_, uint8_t green_, uint8_t blue_) 
-  :Color(red_, green_, blue_, 255)
+  Color::Color(uint8_t red, uint8_t green, uint8_t blue)
+  : Color(red, green, blue, 255)
   {
   }
   Color::Color(const Color &other) 
-  :red(other.red), green(other.green), blue(other.blue),
-  alpha(other.alpha)
+  : red(other.red), green(other.green), blue(other.blue), alpha(other.alpha)
   {
   }
   Color::Color() 
-  :Color(255,255,255)
+  : Color(255,255,255)
   {
   }
 }

@@ -29,7 +29,7 @@
 #include "Quad.h"
 namespace wic
 {
-  /** \brief draws the wic splash screen and exits when the animation completes
+  /** Displays the wic splash animation.
    *  \param backgroundColor the desired background color (try Color::WicGray)
    *  \param textColor the desired text color (try Color::WicOrange)
    *  \param game the game

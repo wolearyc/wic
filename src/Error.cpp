@@ -34,7 +34,8 @@ namespace wic
   {
   }
   InvalidArgument::InvalidArgument(string name, string condition)
-  : std::invalid_argument("\""+name+"\" cannot be " + condition)
+  : std::invalid_argument("\""+name+"\" cannot be " + condition),
+    name(name)
   {
   }
 }

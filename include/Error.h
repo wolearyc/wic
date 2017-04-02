@@ -26,49 +26,48 @@
 using std::string;
 namespace wic
 {
-  /** \brief General runtime exception */
+  /** Runtime exception. */
   class Error : public std::runtime_error
   {
   public:
-    /** \brief Constructor
-     * \param reason the reason for the error
+    /** Constructor.
+     *  \param reason the cause of the error
      */
     Error(string reason);
-    /** \brief Constructor (when error is unspecified) */
+    /** Constructor (unspecified error). */
     Error();
   private:
   };
-  /** \brief Internal, unavoidable error */
+  /** Internal, unavoidable error. */
   class InternalError : public Error
   {
     using Error::Error;
   };
-  /** \brief thrown when a file cannot be found or loaded */
+  /** File loading error. */
   class InvalidFile : public Error
   {
   public:
-    /** \brief Constructor
+    /** Constructor.
      *  \param filepath the offending filepath
      */
     InvalidFile(string filepath);
   };
-  /** \brief thrown when an argument is logically invalid */
+  /** Logically invalid argument error. */
   class InvalidArgument : public std::invalid_argument
   {
   public:
-    /** \brief Constructor
+    /** Constructor.
      *  \param name the offending argument's name
-     *  \param condition condition on argument that caused the error
+     *  \param condition condition satisfied that indicates error
      */
     InvalidArgument(string name, string condition);
-    string name();
+    /** Returns the name of the offending argument. */
+    string getName();
   private:
-    string name_;
+    string name;
   };
-  /** \brief thrown when a function fails, though not due to error.
-   *  A "failure" is distinct from an "error" as an failure is typically
-   *  nonfatal. For example, a client may not be able to join because the
-   *  server is full. This is not exactly an error condition.
+  /** A nonfatal failure. Failures are present by design. An example might be
+   *  a client join failure due to a preexisting ban. 
    */
   class Failure : public Error
   {

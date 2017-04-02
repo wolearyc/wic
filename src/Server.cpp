@@ -21,78 +21,71 @@
 #include "Server.h"
 namespace wic
 {
+  // Utility buffer.
   const size_t bufferSize = 255;
-  uint8_t buffer[255];
+  uint8_t buffer[bufferSize];
 
   Server::Server(string name, unsigned port, uint8_t maxClients)
   : Node(name, port)
   {
-    if(name.length() > 20)
-      throw InvalidArgument("name", "should be less than 20 characters long");
-    if(port < 1025)
-      throw InvalidArgument("port", "should be > 1024");
-    if(maxClients < 1)
-      throw InvalidArgument("maxClients", "should be nonzero");
+    if(maxClients == 0)
+      throw InvalidArgument("maxClients", "zero");
     if(maxClients > 254)
-      throw InvalidArgument("maxClients", "should be < 255");
+      throw InvalidArgument("maxClients", "> 254");
     
-    ID_ = 0;
-    name_ = name;
-    
-    maxNodes_ = 1 + maxClients;
-    addrs_.reserve(maxNodes_);
-    addrs_[0] = addr_;
-    used_.reserve(maxNodes_);
-    used_[0] = true;
-    names_.reserve(maxNodes_);
-    names_[0] = name_;
-    ips_.reserve(maxNodes_);
+    joined = true;
+    ID = 0;
+    maxID = maxClients;
+    addrs.resize(maxID);
+    addrs[0] = addr;
+    used.resize(maxID);
+    used[0] = true;
+    names.resize(maxID);
+    names[0] = name;
+    ips.resize(maxID);
     char tmp[20];
-    inet_ntop(AF_INET, &addr_.sin_addr, tmp, INET_ADDRSTRLEN);
-    ips_[0] = string(tmp);
+    inet_ntop(AF_INET, &addr.sin_addr, tmp, INET_ADDRSTRLEN);
+    ips[0] = string(tmp);
   }
   Server::~Server()
   {
-    Shutdown pkt = Shutdown();
-    sendAll(pkt);
-    close(socket_);
+    sendAll(Shutdown());
+    close(sock);
   }
   void Server::send(const AbstractPacket& packet, NodeID destID) const
   {
     if(destID == 0)
-      throw InvalidArgument("destID", "should be nonzero");
-    if(destID >= maxNodes_)
-      throw InvalidArgument("destID", "destination ID is impossible");
-    
-    if(used_[destID])
-    {
-      size_t size = AbstractPacket::HEADER_SIZE + packet.size();
-      packet.toBuffer(buffer, packet.source());
-      // Server doesn't mess with the source
-      sendto(socket_, buffer, size, 0,
-             (struct sockaddr*) &addrs_[destID], lenAddr_);
-    }
-    else
-      throw Error("destination ID corresponds with no client");
+      throw InvalidArgument("destID", "zero");
+    if(destID > getMaxID())
+      throw InvalidArgument("destID", "> maxID");
+    if(!isUsed(destID))
+      throw InvalidArgument("destID", "unused");
+
+    size_t size = AbstractPacket::HEADER_SIZE + packet.getSize();
+    packet.toBuffer(buffer, packet.getSource());
+    // Server doesn't mess with the source
+    sendto(sock, buffer, size, 0, (struct sockaddr*) &addrs[destID], lenAddr);
   }
   void Server::sendExclude(const AbstractPacket &packet, NodeID excludeID) const
   {
     if(excludeID  == 0)
-      throw InvalidArgument("excludeID", "should be nonzero");
-    if(excludeID >= maxNodes_)
-      throw InvalidArgument("excludeID", "should be less than max clients");
+      throw InvalidArgument("excludeID", "zero");
+    if(excludeID > getMaxID())
+      throw InvalidArgument("excludeID", "maxID");
+    if(!isUsed(excludeID))
+      throw InvalidArgument("destID", "unused");
     
-    for(NodeID i = 1; i < maxNodes_; i++)
+    for(NodeID i = 1; i <= maxID; i++)
     {
-      if(i != excludeID && used_[i])
+      if(i != excludeID && used[i])
         send(packet, i);
     }
   }
   void Server::sendAll(const AbstractPacket& packet) const
   {
-    for(NodeID i = 1; i < maxNodes_; i++)
+    for(NodeID i = 1; i <= maxID; i++)
     {
-      if(used_[i])
+      if(used[i])
         send(packet, i);
     }
   }
@@ -100,11 +93,10 @@ namespace wic
   {
     struct sockaddr_in recvAddr;
     socklen_t tmpLen = sizeof(recvAddr);
-    ssize_t length = recvfrom(socket_, buffer, bufferSize, 0,
+    ssize_t length = recvfrom(sock, buffer, bufferSize, 0,
                               (struct sockaddr*) &recvAddr, &tmpLen);
-    if(length > 0)
+    if(length > 0 && tmpLen == lenAddr)
     {
-      NodeID sourceID;
       result.populate(buffer);
       
       // Recieved packet is a join request, so process and return
@@ -115,66 +107,67 @@ namespace wic
         inet_ntop(AF_INET, &recvAddr.sin_addr, &ip[0], INET_ADDRSTRLEN);
         
         // Search the blacklist. If banned, respond and return.
-        for(unsigned i = 0; i < blacklist_.size(); i++)
+        for(unsigned i = 0; i < blacklist.size(); i++)
         {
-          if(blacklist_[i] == string(ip) || blacklist_[i] == joinRequest.name())
+          if(blacklist[i] == string(ip) || blacklist[i] == joinRequest.name())
           {
-            JoinResponse joinResponse(JoinResponse::BANNED, maxNodes_, 0, name_);
-            size_t size = AbstractPacket::HEADER_SIZE + joinResponse.size();
-            joinResponse.toBuffer(buffer, ID());
-            sendto(socket_, buffer, size, 0, (struct sockaddr*) &recvAddr,
-                   lenAddr_);
+            JoinResponse joinResponse(JoinResponse::BANNED, maxID, 0, name);
+            size_t size = AbstractPacket::HEADER_SIZE + joinResponse.getSize();
+            joinResponse.toBuffer(buffer, Node::getID());
+            sendto(sock, buffer, size, 0, (struct sockaddr*) &recvAddr,
+                   lenAddr);
             return true;
           }
         }
         
         // Determine connections. If full, respond and return
         uint8_t connections = 0;
-        for(NodeID i = 1; i < maxNodes_; i++)
+        for(NodeID i = 0; i <= maxID; i++)
         {
-          if(used_[i])
+          if(used[i])
             connections++;
         }
-        if(connections == maxNodes_ - 1)
+        if(connections == getMaxNodes())
         {
-          JoinResponse joinResponse(JoinResponse::FULL, maxNodes_, 0, name_);
-          size_t size = AbstractPacket::HEADER_SIZE + joinResponse.size();
-          joinResponse.toBuffer(buffer, ID());
-          sendto(socket_, buffer, size, 0, (struct sockaddr*) &recvAddr,
-                 lenAddr_);
+          JoinResponse joinResponse(JoinResponse::FULL, maxID, 0, name);
+          size_t size = AbstractPacket::HEADER_SIZE + joinResponse.getSize();
+          joinResponse.toBuffer(buffer, Node::getID());
+          sendto(sock, buffer, size, 0, (struct sockaddr*) &recvAddr, lenAddr);
           return true;
         }
         
-        // Join ok. Find a new ID and repond
+        // Join ok. Find a new ID, respond, and set up new connection.
         NodeID newID;
-        for(NodeID i = 0; i < maxNodes_; i++)
+        for(NodeID i = 0; i <= maxID; i++)
         {
-          if(!used_[i])
+          if(!used[i])
           {
-            sourceID = i;
             newID = i;
+            break;
           }
         }
-        JoinResponse joinResponse(JoinResponse::OK, maxNodes_, newID, name_);
+
+        JoinResponse joinResponse(JoinResponse::OK, getMaxID(), newID,
+                                  getName());
         send(joinResponse, newID);
         
-        // Setup new connection
-        addrs_[newID] = recvAddr;
-        used_[newID] = true;
-        names_[newID] = joinRequest.name();
+        // Set up new connection
+        addrs[newID] = recvAddr;
+        used[newID] = true;
+        names[newID] = joinRequest.name();
         char tmp[20];
         inet_ntop(AF_INET, &recvAddr.sin_addr, tmp,INET_ADDRSTRLEN);
-        ips_[newID] = string(tmp);
+        ips[newID] = string(tmp);
         
-        // Notify new client of old clients
+        // Bring all clients up to speed.
         ClientJoined clientJoined(newID, joinRequest.name());
         sendExclude(clientJoined, newID);
         result.populate(clientJoined);
-        for(NodeID i = 1; i < maxNodes_; i++)
+        for(NodeID i = 1; i <= maxID; i++)
         {
-          if(used_[i])
+          if(used[i])
           {
-            ClientInfo clientInfo(i, names_[i]);
+            ClientInfo clientInfo(i, names[i]);
             send(clientInfo, newID);
           }
         }
@@ -182,84 +175,86 @@ namespace wic
       }
       
       // Other type of packet; verify source
-      sourceID = result.source();
-      if(sourceID > 0 && sourceID < maxNodes_ && used_[sourceID] &&
-         recvAddr.sin_addr.s_addr == addrs_[sourceID].sin_addr.s_addr &&
-         recvAddr.sin_port == addrs_[sourceID].sin_port)
+      NodeID sourceID = result.getSource();
+      if(sourceID > 0 && sourceID <= maxID && used[sourceID] &&
+         recvAddr.sin_addr.s_addr == addrs[sourceID].sin_addr.s_addr &&
+         recvAddr.sin_port == addrs[sourceID].sin_port)
       {
         // Client left. Notify all clients of exit.
         if(result.isType<Leaving>())
         {
           ClientLeft clientLeft(sourceID, ClientLeft::NORMAL, "");
           sendExclude(clientLeft, sourceID);
-          used_[sourceID] = false;
+          used[sourceID] = false;
         }
         return true;
       }
-      throw Error("packet recieved from unknown source");
+      throw Failure("packet recieved from unknown source");
     }
     return false;
   }
   void Server::kick(NodeID ID, string reason)
   {
-    if(ID < 1)
-      throw InvalidArgument("ID", "should be nonzero");
-    if(ID >= maxNodes_)
-      throw InvalidArgument("ID", "should be less than max clients");
-    if(!used_[ID])
-      throw Error("ID corresponds with no client");
+    if(ID == 0)
+      throw InvalidArgument("ID", "zero");
+    if(ID > getMaxID())
+      throw InvalidArgument("ID", "maxID");
+    if(!isUsed(ID))
+      throw InvalidArgument("ID", "unused");
     if(reason.length() > 50)
-      throw InvalidArgument("reason", "should be under 51 characters");
+      throw InvalidArgument("reason length", "> 50");
     
-    Kick kickPkt(reason);
-    send(kickPkt, ID);
-    ClientLeft clientLeft(ID, ClientLeft::KICKED, reason);
-    sendExclude(clientLeft, ID);
-    used_[ID] = false;
+    send(Kick(reason), ID);
+    sendExclude(ClientLeft(ID, ClientLeft::KICKED, reason), ID);
+    used[ID] = false;
   }
   void Server::kick(string nameOrIP, string reason)
   {
-    kick(getID(nameOrIP), reason);
+    kick(getNodeID(nameOrIP), reason);
   }
   void Server::ban(NodeID ID)
   {
     if(ID < 1)
-      throw InvalidArgument("ID", "should be nonzero");
-    if(ID >= maxNodes_)
-      throw InvalidArgument("ID", "should be less than max clients");
-    if(!used_[ID])
-      throw Error("ID corresponds with no client");
+      throw InvalidArgument("ID", "zero");
+    if(ID > getMaxID())
+      throw InvalidArgument("ID", "maxID");
+    if(!used[ID])
+      throw InvalidArgument("ID", "unused");
     
-    blacklist_.push_back(names_[ID]);
-    Ban banPkt("");
-    send(banPkt, ID);
-    ClientLeft clientLeft(ID, ClientLeft::BANNED, "");
-    sendExclude(clientLeft, ID);
-    used_[ID] = false;
+    blacklist.push_back(names[ID]);
+    send(Ban(""), ID);
+    sendExclude(ClientLeft(ID, ClientLeft::BANNED, ""), ID);
+    used[ID] = false;
   }
-
   void Server::ban(string nameOrIP)
   {
-    blacklist_.push_back(nameOrIP);
+    try
+    {
+      ban(getNodeID(nameOrIP));
+    }
+    catch (Error error)
+    {
+      blacklist.push_back(nameOrIP);
+    }
   }
   void Server::unban(string nameOrIP)
   {
-    for(unsigned i = 0; i < blacklist_.size(); i++)
+    for(unsigned i = 0; i < blacklist.size(); i++)
     {
-      if(nameOrIP == blacklist_[i])
+      if(nameOrIP == blacklist[i])
       {
-        blacklist_.erase(blacklist_.begin() + i);
+        blacklist.erase(blacklist.begin() + i);
         i--;
       }
     }
-    throw Error("no blacklist entry for nameOrIP");
+    throw Error("nameOrIP is not banned");
   }
-  NodeID Server::getID(string nameOrIP) const
+  NodeID Server::getNodeID(string nameOrIP) const
   {
 
-    for(unsigned i = 0; i < maxNodes_; i++)
+    for(unsigned i = 0; i <= maxID; i++)
     {
-      if(used_[i] && (nameOrIP == names_[i] || nameOrIP == ips_[i]))
+      if(used[i] && (nameOrIP == names[i] || nameOrIP == ips[i]))
         return i;
     }
     throw Error("nameOrIP corresponds to no client");

@@ -7,9 +7,8 @@ Table of Contents
 2. Directories and Files
 3. Building wic
 4. Using wic in your project
-5. Conventions
-6. Licensing and Distribution
-7. Credits
+5. Licensing and Distribution
+6. Credits
 
 Summary
 -------
@@ -67,14 +66,6 @@ Second, you'll need to link in the appropriate libraries and frameworks.
 4. You'll also need to link in the Cocoa, Quartz, IOKit, and OpenGL frameworks. In gcc, this can be done with "-framework Cocoa -framework Quartz -framework IOKit -framework OpenGL".
 
 Lastly, you'll need to include "wic_lib.h" in all the code you write. Then you should be good to go!
-
-Conventions
------------
-Wic aims to be extremely consistent, so it has a number of conventions.
-* wic uses camelCase
-* private members have an underscore suffix
-* function parameters that share a name with a public member have an underscore suffix
-* public members are only public when they can modified freely and safely. Generally, Wic uses safe, public members (rather than getter/setter methods) in the interest of simplicity and readability.
 
 Licensing and Distribution
 --------------------------

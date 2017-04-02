@@ -26,34 +26,34 @@
 using std::vector;
 namespace wic
 {
-  /** \brief a filled polygon */
+  /** A filled polygon. */
   class Polygon
   : public Locateable, public Rotateable, public Scaleable, public Colorable,
     public Drawable
   {
   public:
-    /** \brief Constructor
-     *  \param location_ the desired screen location
+    /** Constructor.
+     *  \param location the screen location
      *  \param vertices  the vertices in drawing order; must contain >2 vertices
-     *  \param color_ the desired color
+     *  \param color the desired color
      */
-    Polygon(Pair location_, vector<Pair> vertices, Color color_);
-    /** \brief Default constructor */
+    Polygon(Pair location, vector<Pair> vertices, Color color);
+    /** Default constructor. */
     Polygon();
-    /** \brief Copy constructor */
+    /** Copy constructor. */
     Polygon(const Polygon& other);
     void draw(const Game& game);
-    /** \brief Gets the geometric center */
+    /** Returns the geometric center. */
     Pair getGeoCenter() const;
-    /** \brief sets new vertices
+    /** Sets new vertices.
      *  \param vertices the new vertices in drawing order; must contain >2 
      *         vertices
      */
     void setVertices(vector<Pair> vertices);
-    /** \brief gets the list of vertices in drawing order */
+    /** Returns the list of vertices in drawing order. */
     vector<Pair> getVertices() const;
   protected:
-    vector<Pair> vertices_;
+    vector<Pair> vertices;
   };
 }
 #endif

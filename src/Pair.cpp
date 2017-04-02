@@ -21,20 +21,20 @@
 #include "Pair.h"
 namespace wic
 {
-  Pair::Pair(double x_, double y_) 
-  :x(x_), y(y_)
+  Pair::Pair(double x, double y)
+  : x(x), y(y)
   {
   }
-  Pair::Pair(int x_, int y_) 
-  :Pair((double) x_, (double) y_)
+  Pair::Pair(int x, int y)
+  : Pair((double) x, (double) y)
   {
   }
   Pair::Pair()
-  :Pair(0.0,0.0)
+  : Pair(0.0,0.0)
   {
   }
   Pair::Pair(const Pair& other) 
-  :Pair(other.x, other.y)
+  : Pair(other.x, other.y)
   {
   }
   double Pair::distance(const Pair& other) const 

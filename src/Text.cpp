@@ -22,21 +22,21 @@
 namespace wic
 {
   static Image working_image;
-  Text::Text(Pair location_, string str, const Font* font, Color color_)
-  : Locateable(location_), Rotateable(), Scaleable(), Colorable(color_),
-    Bounded(), Drawable(), str_(str), font_(font)
+  Text::Text(Pair location, string str, const Font* font, Color color)
+  : Locateable(location), Rotateable(), Scaleable(), Colorable(color),
+    Bounded(), Drawable(), str(str), font(font)
   {
-    if(!font)
-      throw InvalidArgument("font", "should not be null");
+    if(font == nullptr)
+      throw InvalidArgument("font", "null");
     
-    offsets_.resize(str.length());
-    images_.resize(str.length());
+    offsets.resize(str.length());
+    images.resize(str.length());
 
-    bounds = getData();
+    bounds = update();
   }
   Text::Text()
   : Locateable(), Rotateable(), Scaleable(), Colorable(), Bounded(), Drawable(),
-    str_(""), font_(nullptr)
+    str(""), font(nullptr)
   {
   }
   Text::~Text()
@@ -44,76 +44,76 @@ namespace wic
   }
   void Text::setString(string str)
   {
-    str_ = str;
-    offsets_.resize(str.length());
-    images_.resize(str.length());
-    bounds = getData();
+    str = str;
+    offsets.resize(str.length());
+    images.resize(str.length());
+    update();
   }
   string Text::getString() const
   {
-    return str_;
+    return str;
   }
   void Text::draw(const Game& game)
   {
-    for(unsigned i = 0; i < str_.length(); i++)
+    for(unsigned i = 0; i < str.length(); i++)
     {
-      if(images_[i].texture != nullptr)
+      if(images[i].texture != nullptr)
       {
-        double height = images_[i].texture->getDimensions().y;
+        double height = images[i].texture->getDimensions().y;
         Bounds imageBounds;
-        imageBounds.lowerLeft = bounds.lowerLeft + offsets_[i];
-        imageBounds.upperRight = bounds.upperRight + offsets_[i];
-        images_[i].bounds = imageBounds;
+        imageBounds.lowerLeft = bounds.lowerLeft + offsets[i];
+        imageBounds.upperRight = bounds.upperRight + offsets[i];
+        images[i].bounds = imageBounds;
         
         Pair imageLocation = location;
         if(drawCentered)
           imageLocation = imageLocation - center;
-        images_[i].location = imageLocation;
+        images[i].location = imageLocation;
         
-        images_[i].rotation = rotation;
-        images_[i].scale = scale;
-        images_[i].center = center;
-        images_[i].draw(game);
+        images[i].rotation = rotation;
+        images[i].scale = scale;
+        images[i].center = center;
+        images[i].draw(game);
       }
     }
   }
   /* populates offsets and images and return the bounds */
-  Bounds Text::getData()
+  Bounds Text::update()
   {
     double x = 0, min_y = 0, max_y = 0;
     int previous_glyph_index = 0;
-    bool do_kerning = FT_HAS_KERNING(font_->face_);
-    for(size_t i = 0; i < str_.length(); i++)
+    bool do_kerning = FT_HAS_KERNING(font->face);
+    for(size_t i = 0; i < str.length(); i++)
     {
-      char c = str_[i];
-      int glyph_index = FT_Get_Char_Index(font_->face_, c);
-      FT_Load_Glyph(font_->face_, glyph_index, 0);
+      char c = str[i];
+      int glyph_index = FT_Get_Char_Index(font->face, c);
+      FT_Load_Glyph(font->face, glyph_index, 0);
       if(do_kerning && previous_glyph_index != 0)
       {
         FT_Vector delta;
-        FT_Get_Kerning(font_->face_, previous_glyph_index, glyph_index,
+        FT_Get_Kerning(font->face, previous_glyph_index, glyph_index,
                        FT_KERNING_UNFITTED, &delta);
         x += delta.x;
       }
-      offsets_[i] = Pair(-x, (double) -(font_->face_->glyph->metrics.horiBearingY -
-                                        font_->face_->glyph->metrics.height) / 64);
-      x += font_->face_->glyph->advance.x / 64;
-      if(-font_->face_->glyph->metrics.height +
-         font_->face_->glyph->metrics.horiBearingY < min_y)
-        min_y = -font_->face_->glyph->metrics.height +
-        font_->face_->glyph->metrics.horiBearingY;
-      if(font_->face_->glyph->metrics.horiBearingY > max_y)
-        max_y = font_->face_->glyph->metrics.horiBearingY;
+      offsets[i] = Pair(-x, (double) -(font->face->glyph->metrics.horiBearingY -
+                                        font->face->glyph->metrics.height) / 64);
+      x += font->face->glyph->advance.x / 64;
+      if(-font->face->glyph->metrics.height +
+         font->face->glyph->metrics.horiBearingY < min_y)
+        min_y = -font->face->glyph->metrics.height +
+        font->face->glyph->metrics.horiBearingY;
+      if(font->face->glyph->metrics.horiBearingY > max_y)
+        max_y = font->face->glyph->metrics.horiBearingY;
     }
-    for(size_t i = 0; i < str_.length(); i++)
+    for(size_t i = 0; i < str.length(); i++)
     {
-      char c = str_[i];
+      char c = str[i];
       if(c == ' ')
-        images_[i].texture = 0;
+        images[i].texture = 0;
       else
       {
-        images_[i] = Image(location, &font_->textures_[c]);
-        images_[i].drawCentered = true;
+        images[i] = Image(location, &font->textures[c]);
+        images[i].drawCentered = true;
       }
     }
     return Bounds(Pair(0.0, min_y / 64), Pair(x, max_y / 64));

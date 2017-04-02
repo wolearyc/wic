@@ -38,48 +38,40 @@ using std::string;
 using std::vector;
 namespace wic
 {
-  /** \brief a node ID */
+  /** A node ID. */
   typedef uint8_t NodeID;
-  /** \brief a UDP node that sends and recieves packets
-   *
-   *  A Client sends and recieves packets to and from the server. It handles
-   *  certain low-level functions, such as joining and leaving.
-   *  More advanced features should be implemented by pulling recieved packets
-   *  out of a client and processing them accordingly. 
-   *
-   *  Each node has an unique nonzero ID. Every node also possesses a name
-   *  (username), which need not be unique and can certainly be empty.
-   */
+  /** A UDP node. Each node possesses a name and a unique integer ID. */
   class Node
   {
   public:
-    static const uint8_t NAME_LEN; /**< defines maximum name length */
-    /** \brief Constructor (binds socket)
+    /** Constructor (binds socket).
+     *  \param name name of the node; limited to 20 characters
      *  \param socketPort the port on which to bind the socket
      */
     Node(string name, unsigned socketPort);
-    /** \brief returns the unique ID */
-    NodeID ID() const;
-    /** \brief returns the name */
-    string name() const;
-    /** \brief gets the maximum allowed ID */
+    /** Returns the unique ID. */
+    NodeID getID() const;
+    /** Returns the name. */
+    string getName() const;
+    /** Returns the maximum allowed ID. */
     NodeID getMaxID() const;
-    /** \brief returns whether or not an ID is in use */
+    /** Returns the maximum number of connected nodes. */
+    uint8_t getMaxNodes() const;
+    /** Returns whether or not an ID is in use */
     bool isUsed(NodeID ID) const;
-    /** \brief returns the name associated with a certain ID */
-    string getName(NodeID ID) const;
+    /** Returns the name currently or previously associated with an ID. */
+    string getNodeName(NodeID ID) const;
   protected:
-    bool joined_;
-    NodeID ID_;
-    string name_;                    
-    uint8_t maxNodes_;
-    vector<bool> used_;
-    vector<string> names_;
-    int socket_;                     
-    socklen_t lenAddr_;              
-    struct sockaddr_in addr_;
-    struct sockaddr_in recvAddr_;
-    socklen_t lenRecvAddr_;
+    static const uint8_t MAX_NAME_LEN;
+    bool joined;
+    NodeID ID;
+    string name;
+    NodeID maxID;
+    vector<bool> used;
+    vector<string> names;
+    int sock;
+    socklen_t lenAddr;
+    struct sockaddr_in addr;
   };
 }
 #endif

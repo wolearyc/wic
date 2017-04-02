@@ -24,24 +24,24 @@
 #include "Polygon.h"
 namespace wic
 {
-  /** \brief a filled rectangle that can be drawn to the screen */
+  /** A filled rectangle. */
   class Quad
   : public Locateable, public Rotateable, public Scaleable, public Colorable,
     public Drawable
   {
   public:
-    /** \brief Constructor
-     *  \param location_ the desired screen location
-     *  \param dimensions_ the dimensions
-     *  \param color_ the desired color
+    /** Constructor.
+     *  \param location the screen location
+     *  \param dimensions the dimensions
+     *  \param color the desired color
      */
-    Quad(Pair location_, Pair dimensions_, Color color_);
-    /** \brief Default constructor */
+    Quad(Pair location, Pair dimensions, Color color);
+    /** Default constructor. */
     Quad();
-    /** \brief Copy constructor */
+    /** Copy constructor. */
     Quad(const Quad& other);
     void draw(const Game& game);
-    /** \brief Gets the geometric center of the quad */
+    /** Returns the geometric center. */
     Pair getGeoCenter() const;
     Pair dimensions;      /**< the dimensions */
   };

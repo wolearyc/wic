@@ -92,16 +92,16 @@ namespace wic
   static bool initialized = false;
   Game::Game(string title, Pair dimensions, unsigned fps,
              bool resizeable, bool fullscreen, unsigned samples)
-  : dimensions_(dimensions)
+  : dimensions(dimensions)
   {
     if(initialized)
       throw Error("a game is already initialized");
     if(dimensions.x < 32)
-      throw InvalidArgument("dimensions.x", "must be greater than 32");
+      throw InvalidArgument("dimensions.x", "< 32");
     if(dimensions.y < 32)
-      throw InvalidArgument("dimensions.y", "must be greater than 32");
-    if(!fps)
-      throw InvalidArgument("fps", "must be nonzero");
+      throw InvalidArgument("dimensions.y", "< 32");
+    if(fps == 0)
+      throw InvalidArgument("fps", "zero");
     if(!glfwInit())
       throw InternalError("glfw failed to initialize");
     glfwWindowHint(GLFW_REFRESH_RATE, fps);
@@ -114,66 +114,66 @@ namespace wic
       throw InternalError("glfw failed to fetch the primary monitor");
     }
     if(fullscreen)
-      window_ = glfwCreateWindow(dimensions.x, dimensions.y, title.data(), monitor,
+      window = glfwCreateWindow(dimensions.x, dimensions.y, title.data(), monitor,
                                 0);
     else
-      window_ = glfwCreateWindow(dimensions.x, dimensions.y, title.data(), 0, 0);
-    if(!window_)
+      window = glfwCreateWindow(dimensions.x, dimensions.y, title.data(), 0, 0);
+    if(!window)
     {
       glfwTerminate();
       throw InternalError("window creation failed");
     }
     glfwSetErrorCallback(errorCallback);
-    glfwSetWindowFocusCallback(window_, focusCallback);
-    glfwSetKeyCallback(window_, keyCallback);
-    glfwSetCharCallback(window_, charCallback);
-    glfwSetCursorPosCallback(window_, cursorLocationCallback);
-    glfwSetScrollCallback(window_, scrollCallback);
-    glfwMakeContextCurrent(window_);
+    glfwSetWindowFocusCallback(window, focusCallback);
+    glfwSetKeyCallback(window, keyCallback);
+    glfwSetCharCallback(window, charCallback);
+    glfwSetCursorPosCallback(window, cursorLocationCallback);
+    glfwSetScrollCallback(window, scrollCallback);
+    glfwMakeContextCurrent(window);
     glfwSetTime(0.0);
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glDisable(GL_DEPTH_TEST);
-    FT_Library FTLibrary_;
-    int error = FT_Init_FreeType(&FTLibrary_);
+    FT_Library FTLibrary;
+    int error = FT_Init_FreeType(&FTLibrary);
     if(error != 0)
     {
       glfwTerminate();
-      glfwDestroyWindow(window_);
+      glfwDestroyWindow(window);
       throw InternalError("freetype could not be initialized");
     }
     int physicalWidth; int physicalHeight;
     glfwGetMonitorPhysicalSize(monitor, &physicalWidth, &physicalHeight);
     const GLFWvidmode* mode = glfwGetVideoMode(monitor);
     
-    pixelDensity_ = Pair(mode->width / (physicalWidth * 0.0393701),
+    pixelDensity = Pair(mode->width / (physicalWidth * 0.0393701),
                          mode->height / (physicalHeight * 0.0393701));
-    secondsPerFrame_ = 1.0 / fps;
-    previousTime_ = 0.0;
-    delta_ = 0.0;
+    secondsPerFrame = 1.0 / fps;
+    previousTime = 0.0;
+    delta = 0.0;
     initialized = true;
   }
   Game::~Game() 
   {
-    glfwDestroyWindow(window_);
+    glfwDestroyWindow(window);
     glfwTerminate();
     initialized = false;
   }
   unsigned Game::updt()
   {
-    if(!glfwWindowShouldClose(window_))
+    if(!glfwWindowShouldClose(window))
     {
-      float delay = secondsPerFrame_ - (glfwGetTime() - previousTime_);
+      float delay = secondsPerFrame - (glfwGetTime() - previousTime);
       if(delay > 0)
         usleep(delay * 1000);
       resetInput();
-      glfwSwapBuffers(window_);
+      glfwSwapBuffers(window);
       glFlush();
       glClearColor(0.0,0.0,0.0,1.0);
       glClear(GL_COLOR_BUFFER_BIT);
       glLoadIdentity();
-      delta_ = glfwGetTime() - previousTime_;
-      previousTime_ = glfwGetTime();
+      delta = glfwGetTime() - previousTime;
+      previousTime = glfwGetTime();
       glfwPollEvents();
       return CONTINUE;
     }
@@ -181,11 +181,11 @@ namespace wic
   }
   void Game::exit()
   {
-    glfwSetWindowShouldClose(window_, true);
+    glfwSetWindowShouldClose(window, true);
   }
   double Game::getDelta() const
   {
-    return delta_;
+    return delta;
   }
   bool Game::isKeyDown(enum Key key) const
   {
@@ -202,7 +202,7 @@ namespace wic
   Pair Game::getCursorLocation() const
   {
     Pair result = cursorLocation;
-    result.y = dimensions_.y - result.y;
+    result.y = dimensions.y - result.y;
     return result;
   }
   Pair Game::getScrollOffset() const
@@ -215,11 +215,11 @@ namespace wic
   }
   Pair Game::getDimensions() const
   {
-    return dimensions_;
+    return dimensions;
   }
   Pair Game::getPixelDensity() const
   {
-    return pixelDensity_;
+    return pixelDensity;
   }
 
   Pair convertLocation(Pair location, Pair dimensions)

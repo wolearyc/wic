@@ -21,142 +21,118 @@
 #include "Packet.h"
 namespace wic
 {
-  const uint8_t NAME_SIZE = 20;
-  const NodeID SERVER_ID = 0;
-  
+  const size_t AbstractPacket::HEADER_SIZE = 3*sizeof(uint8_t);
   AbstractPacket::AbstractPacket()
   {
   }
-  vector<uint8_t> AbstractPacket::data() const
+  vector<uint8_t> AbstractPacket::getData() const
   {
-    return data_;
+    return data;
   }
-  NodeID AbstractPacket::source() const
+  NodeID AbstractPacket::getSource() const
   {
-    return source_;
+    return source;
   }
   void AbstractPacket::toBuffer(uint8_t* dest, NodeID source) const
   {
-    if(!dest)
-      throw InvalidArgument("dest", "should not be null");
-    dest[0] = type();
+    if(dest == nullptr)
+      throw InvalidArgument("dest", "null");
+    dest[0] = getType();
     dest[1] = source;
-    dest[2] = size();
-    memcpy(dest + HEADER_SIZE, data_.data(), size());
-  }
-
-  const size_t AbstractPacket::HEADER_SIZE = sizeof(NodeID) + 2*sizeof(uint8_t);
-
-  template<class SubPacket> Packet<SubPacket>::Packet(const AbstractPacket& other)
-  {
-    data_ = other.data();
-    source_ = other.source();
-  }
-  
-  template<class SubPacket> uint8_t Packet<SubPacket>::type() const
-  {
-    return SubPacket::Type;
-  }
-  template<class SubPacket> uint8_t Packet<SubPacket>::size() const
-  {
-    return SubPacket::Size;
+    dest[2] = getSize();
+    memcpy(dest + HEADER_SIZE, data.data(), getSize());
   }
 
   void MysteryPacket::populate(uint8_t* src)
   {
-    if(!src)
-      throw InvalidArgument("src", "should not be null");
+    if(src == nullptr)
+      throw InvalidArgument("src", "null");
     type_ = src[0];
-    source_ = src[1];
+    source = src[1];
     size_ = src[2];
-    data_.reserve(size_);
-    for(uint8_t i=AbstractPacket::HEADER_SIZE; i < AbstractPacket::HEADER_SIZE + size_; i++)
-      data_.push_back(src[i]);
+    data.reserve(size_);
+    for(uint8_t i = HEADER_SIZE; i < HEADER_SIZE + size_; i++)
+      data.push_back(src[i]);
   }
   void MysteryPacket::populate(const AbstractPacket& other)
   {
-    type_ = other.type();
-    source_ = other.source();
-    size_ = other.size();
-    data_ = other.data();
+    type_ = other.getType();
+    source = other.getSource();
+    size_ = other.getSize();
+    data = other.getData();
   }
-
-  uint8_t MysteryPacket::type() const { return type_; }
-  uint8_t MysteryPacket::size() const { return size_; }
-  template <class PacketClass> bool MysteryPacket::isType() const
-  {
-    return type() == PacketClass::type;
-  }
+  uint8_t MysteryPacket::getType() const { return type_; }
+  uint8_t MysteryPacket::getSize() const { return size_; }
   
   JoinRequest::JoinRequest(string name)
   {
-    data_.reserve(size());
-    memcpy(data_.data(), name.data(), name.length() + 1);
+    data.reserve(getSize());
+    memcpy(data.data(), name.data(), name.length() + 1);
   }
-  string JoinRequest::name()  { return string((char*) data_.data()); }
-  JoinResponse::JoinResponse(uint8_t responseCode, uint8_t numNodes,
+  string JoinRequest::name()  { return string((char*) data.data()); }
+  JoinResponse::JoinResponse(uint8_t responseCode, NodeID maxID,
                               NodeID assignedID, string serverName)
   {
-    data_.reserve(size());
-    data_[0] = responseCode;
-    data_[1] = numNodes;
-    data_[2] = assignedID;
-    memcpy(&data_.data()[3], serverName.data(), serverName.length() + 1);
+    data.reserve(getSize());
+    data[0] = responseCode;
+    data[1] = maxID;
+    data[2] = assignedID;
+    memcpy(&data.data()[3], serverName.data(), serverName.length() + 1);
   }
-  bool JoinResponse::ok() const           { return (data_[0] == OK); }
-  bool JoinResponse::full() const         { return (data_[0] == FULL); }
-  bool JoinResponse::banned() const       { return (data_[0] == BANNED); }
-  uint8_t JoinResponse::maxNodes() const  { return data_[1]; }
-  NodeID JoinResponse::assignedID() const { return data_[2]; }
-  string JoinResponse::serverName() const { return string((char*) &data_.data()[3]); }
+  bool JoinResponse::ok() const           { return (data[0] == OK); }
+  bool JoinResponse::full() const         { return (data[0] == FULL); }
+  bool JoinResponse::banned() const       { return (data[0] == BANNED); }
+  uint8_t JoinResponse::maxID() const  { return data[1]; }
+  NodeID JoinResponse::assignedID() const { return data[2]; }
+  string JoinResponse::serverName() const { return string((char*) &data.data()[3]); }
   const uint8_t JoinResponse::OK = 0;
   const uint8_t JoinResponse::FULL = 1;
   const uint8_t JoinResponse::BANNED = 2;
   
   ClientJoined::ClientJoined(NodeID newID, string newName)
   {
-    data_.reserve(size());
-    data_[0] = newID;
-    memcpy(&data_.data()[1], newName.data(), newName.length() + 1);
+    data.reserve(getSize());
+    data[0] = newID;
+    memcpy(&data.data()[1], newName.data(), newName.length() + 1);
   }
-  NodeID ClientJoined::newID() const   { return data_[0]; }
-  string ClientJoined::newName() const { return string((char*) &data_.data()[1]); }
+  NodeID ClientJoined::newID() const   { return data[0]; }
+  string ClientJoined::newName() const { return string((char*) &data.data()[1]); }
   
   ClientInfo::ClientInfo(NodeID ID, string name)
   {
-    data_.reserve(size());
-    data_[0] = ID;
-    memcpy(&data_.data()[1], name.data(), name.length() + 1);
+    data.reserve(getSize());
+    data[0] = ID;
+    memcpy(&data.data()[1], name.data(), name.length() + 1);
   }
-  NodeID ClientInfo::ID() const   { return data_[0]; }
-  string ClientInfo::name() const { return string((char*) &data_.data()[1]); }
+  NodeID ClientInfo::ID() const   { return data[0]; }
+  string ClientInfo::name() const { return string((char*) &data.data()[1]); }
   
   Kick::Kick(string reason)
   {
-    data_.reserve(size());
-    memcpy(data_.data(), reason.data(), reason.length() + 1);
+    data.reserve(getSize());
+    memcpy(data.data(), reason.data(), reason.length() + 1);
   }
-  string Kick::reason() const  { return string((char*) data_.data()); }
+  string Kick::reason() const  { return string((char*) data.data()); }
   
   Ban::Ban(string reason)
   {
-    data_.reserve(size());
-    memcpy(data_.data(), reason.data(), reason.length() + 1);
+    data.reserve(getSize());
+    memcpy(data.data(), reason.data(), reason.length() + 1);
   }
-  string Ban::reason() const  { return string((char*) data_.data()); }
+  string Ban::reason() const  { return string((char*) data.data()); }
   
   ClientLeft::ClientLeft(NodeID oldID, uint8_t leaveCode, string reason)
   {
-    data_.reserve(size());
-    data_[0] = oldID;
-    data_[1] = leaveCode;
-    memcpy(&data_.data()[2], reason.data(), reason.length() + 1);
+    data.reserve(getSize());
+    data[0] = oldID;
+    data[1] = leaveCode;
+    memcpy(&data.data()[2], reason.data(), reason.length() + 1);
   }
-  NodeID ClientLeft::oldID() const  { return data_[0]; }
-  bool ClientLeft::normal() const   { return (data_[1] == NORMAL); }
-  bool ClientLeft::kicked() const   { return (data_[1] == KICKED); }
-  bool ClientLeft::banned() const   { return (data_[1] == BANNED); }
-  string ClientLeft::reason() const { return string((char*) &data_.data()[2]); }
+  NodeID ClientLeft::oldID() const  { return data[0]; }
+  bool ClientLeft::normal() const   { return (data[1] == NORMAL); }
+  bool ClientLeft::kicked() const   { return (data[1] == KICKED); }
+  bool ClientLeft::banned() const   { return (data[1] == BANNED); }
+  string ClientLeft::reason() const { return string((char*) &data.data()[2]); }
   const uint8_t ClientLeft::NORMAL = 0;
   const uint8_t ClientLeft::KICKED = 1;
   const uint8_t ClientLeft::BANNED = 2;

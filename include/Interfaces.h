@@ -27,107 +27,103 @@
 #include "Game.h"
 namespace wic
 {
-  /** \brief An object possessing a location
-   *
-   *  Most objects are 2D, necessitating the specification of a center about
-   *  which the location is defined.
+  /** An object possessing a location. Most objects are 2D, necessitating the 
+   *  specification of a center about which the location is defined.
    */
   class Locateable
   {
   public:
-    /** \brief Constructor
-     *  \param location_ the location
-     *  \param center_ the center
+    /** Constructor.
+     *  \param location the location
+     *  \param center the center
      */
-    Locateable(Pair location_, Pair center_);
-    /** \brief Constructor
-     *  \param location_ the location
+    Locateable(Pair location, Pair center);
+    /** Constructor.
+     *  \param location the location
      */
-    Locateable(Pair location_);
-    /** \brief Default constructor */
+    Locateable(Pair location);
+    /** Default constructor, */
     Locateable();
-    /** \brief Copy constructor */
+    /** Copy constructor. */
     Locateable(const Locateable& other);
-    Pair location;    /**< \brief the location */
-    Pair center;      /**< \brief the center */
+    Pair location;    /**< the location */
+    Pair center;      /**< the center */
   };
-  /** \brief An object possessing a rotation */
+  /** An object possessing a rotation. */
   class Rotateable
   {
   public:
-    /** \brief Constructor
-     *  \param rotation_ the rotation in radians from the positive x-axis
+    /** Constructor.
+     *  \param rotation the rotation in radians from the positive x-axis
      */
-    Rotateable(double rotation_);
-    /** \brief Default constructor (0 rotation) */
+    Rotateable(double rotation);
+    /** Default constructor (0 rotation). */
     Rotateable();
-    /** \brief Copy constructor */
+    /** Copy constructor. */
     Rotateable(const Rotateable& other);
-    double rotation;  /**< \brief the rotation in radians */
+    double rotation;  /**< the rotation in radians */
   };
-  /** \brief An object possessing a 2D scale */
+  /** An object possessing a 2D scale. */
   class Scaleable
   {
   public:
-    /** \brief Constructor
-     *  \param scale_ the scale
+    /** Constructor.
+     *  \param scale the scale
      */
-    Scaleable(Pair scale_);
-    /** \brief Default constructor (1x1 scale) */
+    Scaleable(Pair scale);
+    /** Default constructor (1x1 scale). */
     Scaleable();
-    /** \brief Copy constructor */
+    /** Copy constructor. */
     Scaleable(const Scaleable& other);
-    Pair scale;    /**< \brief the scale */
+    Pair scale;    /**< the scale */
   };
-  /** \brief An object possessing a color */
+  /** An object possessing a color. */
   class Colorable
   {
   public:
-    /** \brief Constructor
-     *  \param color_ the color
+    /** Constructor.
+     *  \param color the color
      */
-    Colorable(Color color_);
-    /** \brief Default constructor */
+    Colorable(Color color);
+    /** Default constructor. */
     Colorable();
-    /** \brief Copy constructor */
+    /** Copy constructor. */
     Colorable(const Colorable& other);
-    Color color; /**< \brief the color */
+    Color color; /**< the color */
   };
-  /** \brief An object possessing rectangular bounds
-   *
-   *  The lower left and upper right coordinate typically defines the section
-   *  to draw on the object.
+  /** An object possessing rectangular bounds. Bounds are used to draw only a 
+   *  section of an object.
    */
   class Bounded
   {
   public:
-    /** \brief Constructor
-     *  \param bounds_ the bounds
+    /** Constructor.
+     *  \param bounds the bounds
      */
-    Bounded(Bounds bounds_);
-    /** \brief Default constructor */
+    Bounded(Bounds bounds);
+    /** Default constructor. */
     Bounded();
-    /** \brief Copy constructor */
+    /** Copy constructor. */
     Bounded(const Bounded& other);
-    Bounds bounds; /**< \brief the bounds */
+    Bounds bounds; /**< the bounds. */
   };
-  /** \brief an object that can be drawn to the screen */
+  /** An object that can be drawn to the screen. */
   class Drawable
   {
   public:
-    /** \brief Constructor
-     *  \param drawCentered_ whether or not to draw around some center
+    /** Constructor.
+     *  \param drawCentered whether or not to draw around some center
      */
-    Drawable(bool drawCentered_);
-    /** \brief Default constructor (not drawn centered) */
+    Drawable(bool drawCentered);
+    /** Default constructor (not drawn centered). */
     Drawable();
-    /** \brief Copy constructor */
+    /** Copy constructor. */
     Drawable(const Drawable& other);
-    /** \brief draws the object on the screen at its location
+    /** Draws the object on the screen at its location.
      *  \param game the game
      */
     virtual void draw(const Game& game) = 0;
-    /** \brief gets the geometric center */
+    /** Gets the geometric center. */
     virtual Pair getGeoCenter() const = 0;
     bool drawCentered; /**< whether or not to draw around some center */
   };

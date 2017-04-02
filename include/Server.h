@@ -24,18 +24,11 @@
 #include "Packet.h"
 namespace wic
 {
-  /** \brief a simple UDP server that connects to multiple clients
-   *
-   *  A Server sends and recieves packets to and from multiple clients.
-   *  Server handles certain low level functions, such as joining, kicking,
-   *  and banning clients (by name or IP). More advanced features can be 
-   *  implemented by users by pulling recieved packets out of a Server and 
-   *  processing them accordingly.
-   */
+  /** A server node that connects to multiple client nodes. */
   class Server : public Node
   {
   public:
-    /** \brief Constructor (starts server)
+    /** Constructor (starts server).
      *  \param name server's name; limited to 20 characters
      *  \param port port number on which to listen for packets; must be >1024
      *  \param maxClients maximum simultaneously connected clients; must be
@@ -43,53 +36,53 @@ namespace wic
      */
     Server(string name, unsigned port, uint8_t maxClients);
     ~Server();
-    /** \brief sends a packet to a single client
+    /** Sends a packet to a single client.
      *  \param packet the packet to send
      *  \param destID the ID of the recipient
      */
     void send(const AbstractPacket& packet, NodeID destID) const;
-    /** \brief sends a packet to all but one clients
+    /** Sends a packet to all clients except one.
      *  \param packet the packet to send
      *  \param excludeID the ID of the excluded client
      */
     void sendExclude(const AbstractPacket& packet, NodeID excludeID) const;
-    /** \brief broadcasts a packet to all clients
+    /** Broadcasts a packet to all clients
      *  \param packet the packet to send
      */
     void sendAll(const AbstractPacket& packet) const;
-    /** \brief fetches and processes a single recieved packet
+    /** Attempts to recieve a single packet. 
      *  \param result the destination of the received packet
      *  \return true if packet recieved, false otherwise
      */
     bool recv(MysteryPacket& result);
-    /** \brief kicks a client
+    /** Kicks a client by ID.
      *  \param ID the ID of the client to be kicked
      *  \param reason the reason; limited to 50 characters
      */
     void kick(NodeID ID, string reason);
-    /** \brief kicks a client
+    /** Kicks a client by name or IP.
      *  \param nameOrIP the client's name or IP address
      *  \param reason the reason; limited to 50 characters
      */
     void kick(string nameOrIP, string reason);
-    /** \brief kicks a client and prevents them from reconnecting
+    /** Kicks a client by ID and prevents that client from reconnecting.
      *  \param ID the ID of the client to be banned
      */
     void ban(NodeID ID);
-    /** \brief bans a name or IP address
+    /** Bans a name or IP address.
      *  \param nameOrIP a name or IP address
      */
     void ban(string nameOrIP);
-    /** \brief unbans a name or IP address
+    /** Unbans a name or IP address.
      *  \param nameOrIP a name or IP address
      */
     void unban(string nameOrIP);
-    /** \brief returns the ID of the client with a name or IP address */
-    NodeID getID(string nameOrIP) const;
+    /** Returns the ID of the client with a name or IP address */
+    NodeID getNodeID(string nameOrIP) const;
   private:
-    vector<string> ips_;
-    vector<string> blacklist_;
-    vector<struct sockaddr_in> addrs_;
+    vector<string> ips;
+    vector<string> blacklist;
+    vector<struct sockaddr_in> addrs;
   };
 }
 #endif

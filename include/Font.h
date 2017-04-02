@@ -30,13 +30,12 @@
 #include "Error.h"
 namespace wic
 {
-  /** \brief a font
-   */
+  /** A font. */
   class Font
   {
     friend class Text;
   public:
-    /** \brief Constructor
+    /** Constructor.
      *  \param filepath the absolute or relative filepath to a TrueType (TTF),
      *         TrueType collection (TTC), Type 1 (PFA and PFB), CID-keyed Type 1,
      *         CFF, OpenType, OpenType collection, SFNT-based bitmap, X11 PCF,
@@ -47,15 +46,15 @@ namespace wic
      * \param game the game
      */
     Font(string filepath, unsigned point, bool antialias, const Game& game);
-    /** \brief Default constructor */
+    /** Default constructor */
     Font();
     ~Font();
   private:
-    const static unsigned NumChars = 128;
-    FT_Face face_;
-    Texture textures_[NumChars];
-    unsigned short point_;
-    bool antialias_;
+    const static unsigned NUM_CHARS = 128;
+    FT_Face face;
+    Texture textures[NUM_CHARS];
+    unsigned short point;
+    bool antialias;
   };
 }
 #endif

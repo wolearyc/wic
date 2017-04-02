@@ -25,22 +25,22 @@
 #include "Texture.h"
 namespace wic
 {
-  /** \brief an image that can be drawn to the screen */
+  /** An image. */
   class Image
   : public Locateable, public Rotateable, public Scaleable, public Colorable,
     public Bounded, public Drawable
   {
   public:
-    /** \brief Constructor
-     *  \param location_ the screen location
-     *  \param texture_ the texture
+    /** Constructor.
+     *  \param location the screen location
+     *  \param texture the texture
      */
-    Image(Pair location_, const Texture* texture_);
-    /** \brief Default constructor */
+    Image(Pair location, const Texture* texture);
+    /** Default constructor. */
     Image();
-    /** \brief Copy constructor */
+    /** Copy constructor. */
     Image(const Image& other);
-    /** \brief fetches the geometric center */
+    /** Returns the geometric center. */
     Pair getGeoCenter() const;
     void draw(const Game& game);
     const Texture* texture;     /**< the texture */

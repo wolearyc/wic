@@ -21,21 +21,20 @@
 #include "Client.h"
 namespace wic
 {
-  const size_t BUFFER_SIZE_ = 255;
-  uint8_t buffer_[255];
-
+  const size_t bufferSize = 255;
+  uint8_t buffer[bufferSize];
   Client::Client(string name, unsigned serverPort, string serverIP,
                  double timeout)
   : Node(name, 0)
   {
     // Initialize server address
-    bzero(&serverAddr_, sizeof(serverAddr_));
-    serverAddr_.sin_family = AF_INET;
-    serverAddr_.sin_addr.s_addr = inet_addr(serverIP.data());
-    serverAddr_.sin_port = htons(serverPort);
+    bzero(&serverAddr, sizeof(serverAddr));
+    serverAddr.sin_family = AF_INET;
+    serverAddr.sin_addr.s_addr = inet_addr(serverIP.data());
+    serverAddr.sin_port = htons(serverPort);
     
     // Send a join request
-    JoinRequest pkt(name_);
+    JoinRequest pkt(name);
     send(pkt);
     
     // Wait for, then process, the server's response
@@ -44,14 +43,14 @@ namespace wic
     {
       struct sockaddr_in recvAddr;
       socklen_t tmpLen = sizeof(recvAddr);
-      ssize_t length = recvfrom(socket_, buffer_, BUFFER_SIZE_, 0,
+      ssize_t length = recvfrom(sock, buffer, bufferSize, 0,
                                 (struct sockaddr*) &recvAddr, &tmpLen);
       // Process anything recieved
       if(length > 0)
       {
         // Populate a mystery packet
         MysteryPacket pkt;
-        pkt.populate((buffer_));
+        pkt.populate((buffer));
         if(pkt.isType<JoinResponse>())
         {
           // Process the recieved join response
@@ -59,16 +58,16 @@ namespace wic
           if(joinResponse.ok())
           {
             // Join successful, set everything up
-            joined_ = true;
-            ID_ = joinResponse.assignedID();
-            maxNodes_ = joinResponse.maxNodes();
-            used_ = vector<bool>(maxNodes_, false);
-            used_[0] = true;
-            used_[ID_] = true;
-            names_.resize(maxNodes_);
-            names_[0] = joinResponse.serverName();
-            names_[ID_] = name_;
-            serverAddr_ = recvAddr;
+            joined = true;
+            ID = joinResponse.assignedID();
+            maxID = joinResponse.maxID();
+            used = vector<bool>(maxID, false);
+            used[0] = true;
+            used[ID] = true;
+            names.resize(getMaxID());
+            names[0] = joinResponse.serverName();
+            names[ID] = name;
+            serverAddr = recvAddr;
             return;
           }
           else if(joinResponse.full())
@@ -82,54 +81,53 @@ namespace wic
   }
   Client::~Client() 
   {
-    Leaving pkt = Leaving();
-    send(pkt);
-    close(socket_);
+    send(Leaving());
+    close(sock);
   }
   void Client::send(const AbstractPacket& packet) const
   {
-    size_t size = AbstractPacket::HEADER_SIZE + packet.size();
-    packet.toBuffer(buffer_, ID_);
-    sendto(socket_, buffer_, size, 0, (struct sockaddr*) &serverAddr_, lenAddr_);
+    size_t size = AbstractPacket::HEADER_SIZE + packet.getSize();
+    packet.toBuffer(buffer, ID);
+    sendto(sock, buffer, size, 0, (struct sockaddr*) &serverAddr, lenAddr);
   }
   bool Client::recv(MysteryPacket& result)
   {
     // Pull data from the socket
     struct sockaddr_in recvAddr;
     socklen_t tmpLen = sizeof(recvAddr);
-    ssize_t length = recvfrom(socket_, buffer_, BUFFER_SIZE_, 0,
+    ssize_t length = recvfrom(sock, buffer, bufferSize, 0,
                               (struct sockaddr*) &recvAddr, &tmpLen);
     if(length > 0)
     {
       // Verify data comes from server and populate a mystery packet
-      if(recvAddr.sin_addr.s_addr == serverAddr_.sin_addr.s_addr &&
-         recvAddr.sin_port == serverAddr_.sin_port)
+      if(recvAddr.sin_addr.s_addr == serverAddr.sin_addr.s_addr &&
+         recvAddr.sin_port == serverAddr.sin_port)
       {
-        result.populate(buffer_);
+        result.populate(buffer);
         
         // Characterize and process the mystery packet
         if(result.isType<ClientJoined>())
         {
           ClientJoined clientJoined(result);
-          used_[clientJoined.newID()] = true;
-          names_[clientJoined.newID()] = clientJoined.newName();
+          used[clientJoined.newID()] = true;
+          names[clientJoined.newID()] = clientJoined.newName();
         }
         else if(result.isType<ClientInfo>())
         {
           ClientInfo clientInfo(result);
-          used_[clientInfo.ID()] = true;
-          names_[clientInfo.ID()] = clientInfo.name();
+          used[clientInfo.ID()] = true;
+          names[clientInfo.ID()] = clientInfo.name();
         }
         else if(result.isType<Kick>() ||
                 result.isType<Ban>()  ||
                 result.isType<Shutdown>())
         {
-          joined_ = false;
+          joined = false;
         }
         else if(result.isType<ClientLeft>())
         {
           ClientLeft clientLeft(result);
-          used_[clientLeft.oldID()] = false;
+          used[clientLeft.oldID()] = false;
         }
         return true;
       }

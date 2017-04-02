@@ -22,13 +22,13 @@
 namespace wic
 {
   static Pair vertices[4] = {Pair()}; /* utility buffer for vertices */
-  Quad::Quad(Pair location_, Pair dimensions_, Color color_)
-  : Locateable(location_), Rotateable(), Scaleable(), Colorable(color_),
-    Drawable(), dimensions(dimensions_)
+  Quad::Quad(Pair location, Pair dimensions, Color color)
+  : Locateable(location), Rotateable(), Scaleable(), Colorable(color),
+    Drawable(), dimensions(dimensions)
   {
   }
   Quad::Quad()
-  : Quad(Pair(), Pair(), Color::White)
+  : Quad(Pair(), Pair(10,10), Color::White)
   {
   }
   Quad::Quad(const Quad& other)

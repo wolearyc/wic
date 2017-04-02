@@ -24,38 +24,37 @@
 #include "Pair.h"
 namespace wic
 {
-  /** \brief a bounding rectangle, consisting of a lower left and an upper right
-   *         coordinate
+  /** A bounding rectangle. Bounds consists of a lower-left and an upper-right
+   *  coordinate.
    */
   class Bounds
   {
   public:
-    /** \brief Constructor
-     *  \param lowerLeft_ the desired lower-left coordinate
-     *  \param upperRight_ the desired upper-right coordinate
+    /** Constructor.
+     *  \param lowerLeft the lower-left coordinate
+     *  \param upperRight the upper-right coordinate
      */
-    Bounds(Pair lowerLeft_, Pair upperRight_);
-    /** \brief Constructor
-     *  \param lowerLeftX the desired x value of the lower-left coordinate
-     *  \param lowerLeftY the desired y value of the lower-left coordinate
-     *  \param upperRightX the desired x value of the upper-right coordinate
-     *  \param upperRightY the desired y value of the upper-right coordinate
+    Bounds(Pair lowerLeft, Pair upperRight);
+    /** Constructor.
+     *  \param lowerLeftX the x value of the lower-left coordinate
+     *  \param lowerLeftY the y value of the lower-left coordinate
+     *  \param upperRightX the x value of the upper-right coordinate
+     *  \param upperRightY the y value of the upper-right coordinate
      */
-    Bounds(int lowerLeftX, int lowerLeftY,
-           int upperRightX, int upperRightY);
-    /** \brief Constructor
-     *  \param location the desired location of the lower-left coordinate
-     *         relative to whatever the Bounds is bounding
-     *  \xDimension the desired width from the lower-left coordinate
-     *  \yDimension the desired height from the lower-left coordinate
+    Bounds(int lowerLeftX, int lowerLeftY, int upperRightX, int upperRightY);
+    /** Constructor.
+     *  \param location the location of the lower-left coordinate
+     *                  relative to whatever is being bounded
+     *  \param xDimension the bounding width
+     *  \param yDimension the bounding height
      */
     Bounds(Pair location, int xDimension, int yDimension);
-    /** \brief Default constructor */
+    /** Default constructor (32x32). */
     Bounds();
-    /** \brief Copy constructor */
+    /** Copy constructor. */
     Bounds(const Bounds& other);
-    Pair lowerLeft;  /**< \brief lower left coordinate */
-    Pair upperRight; /**< \brief upper right coordinate */
+    Pair lowerLeft;  /**< Lower-left coordinate. */
+    Pair upperRight; /**< Upper-right coordinate. */
   };
   
 }

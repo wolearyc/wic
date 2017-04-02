@@ -21,8 +21,8 @@
 #include "Polygon.h"
 namespace wic
 {
-  Polygon::Polygon(Pair location_, vector<Pair> vertices, Color color_)
-  : Locateable(location_), Rotateable(), Scaleable(), Colorable(color_),
+  Polygon::Polygon(Pair location, vector<Pair> vertices, Color color)
+  : Locateable(location), Rotateable(), Scaleable(), Colorable(color),
     Drawable()
   {
     setVertices(vertices);
@@ -33,22 +33,22 @@ namespace wic
   }
   Polygon::Polygon(const Polygon& other)
   : Locateable(other), Rotateable(other), Scaleable(other), Colorable(other),
-    Drawable(other), vertices_(other.vertices_)
+    Drawable(other), vertices(other.vertices)
   {
   }
   void Polygon::setVertices(vector<Pair> vertices)
   {
     if(vertices.size() < 3)
-      throw InvalidArgument("vertices", "must contain more than 2 vertices");
-    vertices_ = vertices;
+      throw InvalidArgument("vertices length", "< 3");
+    this->vertices = vertices;
   }
-  vector<Pair> Polygon::getVertices() const { return vertices_; };
+  vector<Pair> Polygon::getVertices() const { return vertices; };
   Pair Polygon::getGeoCenter() const
   {
     Pair result = Pair();
-    for(unsigned i = 0; i < vertices_.size(); i++)
-      result += vertices_[i];
-    result /= vertices_.size();
+    for(unsigned i = 0; i < vertices.size(); i++)
+      result += vertices[i];
+    result /= vertices.size();
     return result;
   }
   void Polygon::draw(const Game& game)
@@ -57,9 +57,9 @@ namespace wic
     double sine = sin(rotation);
     glColor4ub(color.red, color.green, color.blue, color.alpha);
     glBegin(GL_POLYGON);
-    for(unsigned i = 0; i < vertices_.size(); i++)
+    for(unsigned i = 0; i < vertices.size(); i++)
     {
-      Pair vertex = vertices_[i];
+      Pair vertex = vertices[i];
       vertex -= center;
       vertex *= scale;
       double x = vertex.x * cosine - vertex.y * sine;

@@ -21,10 +21,10 @@
 #include "Image.h"
 namespace wic
 {
-  Image::Image(Pair location_, const Texture* texture_)
-  : Locateable(location_), Rotateable(), Scaleable(), Colorable(),
-    Drawable(), Bounded(Bounds(Pair(), texture_->getDimensions())),
-    texture(texture_)
+  Image::Image(Pair location, const Texture* texture)
+  : Locateable(location), Rotateable(), Scaleable(), Colorable(),
+    Drawable(), Bounded(Bounds(Pair(), texture->getDimensions())),
+    texture(texture)
   {
   }
   Image::Image()
@@ -40,13 +40,13 @@ namespace wic
   Pair Image::getGeoCenter() const
   {
     Pair diagonal = bounds.upperRight - bounds.lowerLeft;
-    return diagonal / Pair(2,2);
+    return diagonal / 2;
   }
   void Image::draw(const Game& game)
   {
     Pair windowDimensions = game.getDimensions();
     Pair textureDimensions = texture->getDimensions();
-    glBindTexture(GL_TEXTURE_2D, texture->data_);
+    glBindTexture(GL_TEXTURE_2D, texture->data);
     glColor4ub(color.red, color.green, color.blue,
                color.alpha);
     glEnable(GL_TEXTURE_2D);

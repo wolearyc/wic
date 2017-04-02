@@ -24,7 +24,6 @@ namespace wic
 {
   void drawSplash(Color backgroundColor, Color textColor, Game& game)
   {
-    
     backgroundColor.alpha = 0;
     textColor.alpha = 0;
     
@@ -43,14 +42,13 @@ namespace wic
     };
     Texture wicTexture(wicBuffer, Pair(12,5), Format::Mono, Filter::Nearest,
                        Wrap::Repeat);
-    
     Pair location = game.getDimensions() / 2;
     Image wic(location, &wicTexture);
-    
     wic.scale = Pair(10,10) * scaleMultiplier;
     wic.center = wic.getGeoCenter();
     wic.drawCentered = true;
     wic.color = textColor;
+    
     unsigned char engineBuffer[] =
     {
       1,1,1,0,1,0,0,1,0,0,1,1,0,1,0,1,0,0,1,0,1,1,1,
@@ -61,13 +59,10 @@ namespace wic
     };
     Texture engineTexture(engineBuffer, Pair(23,5),Format::Mono, Filter::Nearest,
                           Wrap::Repeat);
-
-    
     location.x += wic.scale.x * wicTexture.getDimensions().x / 2;
     location.y -= wic.scale.y * (wicTexture.getDimensions().y / 2 + 1);
     location = Pair((int) location.x, (int) location.y);
-    Image engine = Image(location, &engineTexture);
-
+    Image engine(location, &engineTexture);
     engine.scale = Pair(2,2) * scaleMultiplier;
     engine.center = engine.getGeoCenter();
     engine.center.x *= 2;
@@ -81,20 +76,19 @@ namespace wic
       1,0,1,0,1,0,0,0,1,
       0,1,0,0,1,0,1,0,1,
     };
+    
     Texture versionTexture(versionBuffer, Pair(9,5), Format::Mono,
                            Filter::Nearest, Wrap::Repeat);
-
-    
     location.y -= engine.scale.y * (engineTexture.getDimensions().y / 2 + 1);
     location.y = (int) location.y;
-    Image version = Image(location, &versionTexture);
-
+    Image version(location, &versionTexture);
     version.scale = Pair(1.5,1.5) * scaleMultiplier;
     version.center = version.getGeoCenter();
     version.center.x *= 2;
     version.center.y *= 2;
     version.drawCentered = true;
     version.color = textColor;
+    
     double time;
     int stage = 0;
     while(game.updt() == CONTINUE)

@@ -22,12 +22,12 @@
 #include "Interfaces.h"
 namespace wic
 {
-  Locateable::Locateable(Pair location_, Pair center_)
-  : location(location_), center(center_)
+  Locateable::Locateable(Pair location, Pair center)
+  : location(location), center(center)
   {
   }
-  Locateable::Locateable(Pair location_)
-  : location(location_), center(Pair())
+  Locateable::Locateable(Pair location)
+  : location(location), center(Pair())
   {
   }
   Locateable::Locateable()
@@ -38,8 +38,8 @@ namespace wic
   : location(other.location), center(other.center)
   {
   }
-  Rotateable::Rotateable(double rotation_)
-  : rotation(rotation_)
+  Rotateable::Rotateable(double rotation)
+  : rotation(rotation)
   {
   }
   Rotateable::Rotateable()
@@ -50,8 +50,8 @@ namespace wic
   : rotation(other.rotation)
   {
   }
-  Scaleable::Scaleable(Pair scale_)
-  : scale(scale_)
+  Scaleable::Scaleable(Pair scale)
+  : scale(scale)
   {
   }
   Scaleable::Scaleable()
@@ -62,8 +62,8 @@ namespace wic
   : scale(other.scale)
   {
   }
-  Colorable::Colorable(Color color_)
-  : color(color_)
+  Colorable::Colorable(Color color)
+  : color(color)
   {
   }
   Colorable::Colorable()
@@ -74,8 +74,8 @@ namespace wic
   : color(other.color)
   {
   }
-  Bounded::Bounded(Bounds bounds_)
-  : bounds(bounds_)
+  Bounded::Bounded(Bounds bounds)
+  : bounds(bounds)
   {
   }
   Bounded::Bounded()
@@ -86,8 +86,8 @@ namespace wic
   : bounds(other.bounds)
   {
   }
-  Drawable::Drawable(bool drawCentered_)
-  : drawCentered(drawCentered_)
+  Drawable::Drawable(bool drawCentered)
+  : drawCentered(drawCentered)
   {
   }
   Drawable::Drawable()

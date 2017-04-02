@@ -22,25 +22,25 @@
 #include "Bounds.h"
 namespace wic
 {
-  Bounds::Bounds(Pair lowerLeft_, Pair upperRight_) 
-  :lowerLeft(lowerLeft_), upperRight(upperRight_)
+  Bounds::Bounds(Pair lowerLeft, Pair upperRight)
+  : lowerLeft(lowerLeft), upperRight(upperRight)
   {
   }
   Bounds::Bounds(int lowerLeftX, int lowerLeftY, int upperRightX,
-                 int upperRightY) 
-  :Bounds(Pair(lowerLeftX, lowerLeftY), Pair(upperRightX, upperRightY))
+                 int upperRightY)
+  : Bounds(Pair(lowerLeftX, lowerLeftY), Pair(upperRightX, upperRightY))
   {
   }
   Bounds::Bounds(Pair location, int xDimension, int yDimension) 
-  :Bounds(location, location + Pair(xDimension,yDimension))
+  : Bounds(location, location + Pair(xDimension,yDimension))
   {
   }
   Bounds::Bounds(const Bounds& other) 
-  :Bounds(other.lowerLeft, other.upperRight)
+  : Bounds(other.lowerLeft, other.upperRight)
   {
   }
   Bounds::Bounds() 
-  :Bounds(Pair(), Pair(32,32))
+  : Bounds(Pair(), Pair(32,32))
   {
   }
 }

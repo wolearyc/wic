@@ -31,7 +31,7 @@
 using std::string;
 namespace wic
 {
-  /** \brief defines constants for keyboard keys and mouse buttons */
+  /** Enumerates keyboard keys and mouse buttons */
   enum class Key
   {
     SPACE = 32,          /**< the space key */
@@ -163,17 +163,16 @@ namespace wic
   };
   extern const unsigned CONTINUE;  /**< Code indicating window is still open */
   extern const unsigned TERMINATE; /**< Code indicating window is closed */
-  /** \brief Wic's primary system interface
-   *
-   *  Game is in charge of the OS window, time, input, and graphic output. The
-   *  first step in any game is to construct a Game.
+  /** Wic's primary system interface Game is in charge of the OS window, time, 
+   *  input, and graphic output. The first step in any game is to construct a 
+   *  Game.
    */
   class Game
   {
     friend class Texture;
     friend class Font;
   public:
-    /** \brief Constructor.
+    /** Constructor.
      *  \param title the desired window title
      *  \param dimensions the desired window dimensions; both components must be
      *         greater than or equal to 32
@@ -187,59 +186,48 @@ namespace wic
     Game(string title, Pair dimensions, unsigned fps,
          bool resizeable, bool fullscreen, unsigned samples);
     ~Game();
-    /** \brief flips the OpenGL buffer
-     *
-     *  This function will wait a certain amount of time before returning. 
-     *  This mechanism ensures that the fps is maintained.
+    /** Advances to the next frame. This function will wait a certain amount of
+     *  time before returning, This mechanism ensures that the fps is 
+     *  maintained.
      *  \return TERMINATE if the window has been closed and the program should
      *          exit. CONTINUE otherwise.
      */
     unsigned updt();
-    /** \brief forces game to excit
-     *
-     *  Closes the window. The next time updt is called, the TERMINATE code
-     *  will be returned.
+    /** Forces game to exit. This function closes the window and ensures that
+     *  the next call to updt will return TERMINATE.
      */
     void exit();
-    /** \brief fetches the time since the last updt in seconds */
+    /** Returns the time since the last updt in seconds. */
     double getDelta() const;
-    /** \brief determines whether or not a keyboard key/mouse button is being
-     *         depressed
+    /** Returns whether or not a keyboard key/mouse button is being depressed.
      *  \param key the keyboard key/mouse button
-     *  \return true if the keyboard key/mouse button is being depressed, false
-     *          otherwise
      */
     bool isKeyDown(enum Key key) const;
-    /** \brief determines whether or not a keyboard key/mouse button was pressed
-     *         since the last game update
+    /** Returns whether or not a keyboard key/mouse button was pressed since the 
+     *  last call to updt.
      *  \param key the keyboard key/mouse button
-     *  \return true if the keyboard key/mouse button was pressed since the last
-     *          game update, false otherwise
      */
     bool isKeyPressed(enum Key key) const;
-    /** \brief retrieves the keyboard input (human-readable) since the last game
-     *        update
-     */
+    /** Returns the human-readable keyboard input since the last call to updt */
     string getInput() const;
-    /** \brief retrieves the cursor location */
+    /** Returns the cursor location. */
     Pair getCursorLocation() const;
-    /** \brief retrieves the scroll wheel/ball offset since the last game update
-     */
+    /** Returns the scroll wheel/ball offset since last call to updt. */
      Pair getScrollOffset() const;
-    /** \brief retrieves the time since init_game was called */
+    /** Returns the game time in seconds. */
     double getTime() const;
-    /** \brief returns the dimensions of the window in pixels */
+    /** Returns the pixel dimensions. */
     Pair getDimensions() const;
-    /** \brief returns the pixel density of the window in pixels/inch */
+    /** Returns the screen pixel density (pixels/square inch) */
     Pair getPixelDensity() const;
   private:
-    GLFWwindow* window_;
-    Pair dimensions_;
-    Pair pixelDensity_;
-    double secondsPerFrame_;
-    double previousTime_;
-    double delta_;
-    FT_Library FTLibrary_;
+    GLFWwindow* window;
+    Pair dimensions;
+    Pair pixelDensity;
+    double secondsPerFrame;
+    double previousTime;
+    double delta;
+    FT_Library FTLibrary;
   };
   Pair convertLocation(Pair location, Pair dimensions);
   
