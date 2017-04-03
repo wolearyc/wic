@@ -25,7 +25,7 @@ namespace wic
   uint8_t buffer[bufferSize];
   Client::Client(string name, unsigned serverPort, string serverIP,
                  double timeout)
-  : Node(name, 0)
+  : Node(name)
   {
     // Initialize server address
     bzero(&serverAddr, sizeof(serverAddr));
@@ -64,7 +64,7 @@ namespace wic
             used = vector<bool>(maxID, false);
             used[0] = true;
             used[ID] = true;
-            names.resize(getMaxID());
+            names.resize(getMaxNodes());
             names[0] = joinResponse.serverName();
             names[ID] = name;
             serverAddr = recvAddr;
@@ -81,7 +81,8 @@ namespace wic
   }
   Client::~Client() 
   {
-    send(Leaving());
+    if(joined)
+      send(Leaving());
     close(sock);
   }
   void Client::send(const AbstractPacket& packet) const

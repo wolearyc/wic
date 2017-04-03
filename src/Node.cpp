@@ -30,6 +30,19 @@ namespace wic
     if(socketPort < 1025)
       throw InvalidArgument("port", "< 1025");
     
+    bindSocket(socketPort);
+  }
+  Node::Node(string name)
+  : joined(false), ID(0), name(name), maxID(0), sock(0),
+    lenAddr(sizeof(sockaddr_in))
+  {
+    if(name.length() > MAX_NAME_LEN)
+      throw InvalidArgument("name", "> " + std::to_string(MAX_NAME_LEN));
+    
+    bindSocket(0);
+  }
+  void Node::bindSocket(unsigned socketPort)
+  {
     sock = socket(AF_INET, SOCK_DGRAM, 0);
     if(sock == -1)
       throw InternalError("socket could not initialize");

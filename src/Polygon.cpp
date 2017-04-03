@@ -60,13 +60,9 @@ namespace wic
     for(unsigned i = 0; i < vertices.size(); i++)
     {
       Pair vertex = vertices[i];
-      vertex -= center;
-      vertex *= scale;
-      double x = vertex.x * cosine - vertex.y * sine;
-      double y = vertex.x * sine + vertex.y * cosine;
-      vertex = Pair(x,y);
-      if(!drawCentered)
-        vertex += center;
+      vertex.transform(rotation, scale, center);
+      if(drawCentered)
+        vertex -= center;
       vertex = convertLocation(vertex+location, game.getDimensions());
       glVertex2d(vertex.x, vertex.y);
     }

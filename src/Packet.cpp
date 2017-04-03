@@ -40,9 +40,8 @@ namespace wic
     dest[0] = getType();
     dest[1] = source;
     dest[2] = getSize();
-    memcpy(dest + HEADER_SIZE, data.data(), getSize());
+    memcpy(dest + HEADER_SIZE, &data[0], getSize());
   }
-
   void MysteryPacket::populate(uint8_t* src)
   {
     if(src == nullptr)
@@ -50,9 +49,8 @@ namespace wic
     type_ = src[0];
     source = src[1];
     size_ = src[2];
-    data.reserve(size_);
-    for(uint8_t i = HEADER_SIZE; i < HEADER_SIZE + size_; i++)
-      data.push_back(src[i]);
+    data.resize(size_);
+    memcpy(&data[0], &src[3], size_);
   }
   void MysteryPacket::populate(const AbstractPacket& other)
   {
@@ -66,67 +64,65 @@ namespace wic
   
   JoinRequest::JoinRequest(string name)
   {
-    data.reserve(getSize());
-    memcpy(data.data(), name.data(), name.length() + 1);
+    memcpy(&data[0], name.data(), name.size()+1);
   }
   string JoinRequest::name()  { return string((char*) data.data()); }
+  
   JoinResponse::JoinResponse(uint8_t responseCode, NodeID maxID,
                               NodeID assignedID, string serverName)
   {
-    data.reserve(getSize());
     data[0] = responseCode;
     data[1] = maxID;
     data[2] = assignedID;
-    memcpy(&data.data()[3], serverName.data(), serverName.length() + 1);
+    memcpy(&data[3], serverName.data(), serverName.size()+1);
   }
   bool JoinResponse::ok() const           { return (data[0] == OK); }
   bool JoinResponse::full() const         { return (data[0] == FULL); }
   bool JoinResponse::banned() const       { return (data[0] == BANNED); }
-  uint8_t JoinResponse::maxID() const  { return data[1]; }
+  uint8_t JoinResponse::maxID() const     { return data[1]; }
   NodeID JoinResponse::assignedID() const { return data[2]; }
-  string JoinResponse::serverName() const { return string((char*) &data.data()[3]); }
+  string JoinResponse::serverName() const { return string((char*) &data[3]); }
   const uint8_t JoinResponse::OK = 0;
   const uint8_t JoinResponse::FULL = 1;
   const uint8_t JoinResponse::BANNED = 2;
   
   ClientJoined::ClientJoined(NodeID newID, string newName)
   {
-    data.reserve(getSize());
     data[0] = newID;
-    memcpy(&data.data()[1], newName.data(), newName.length() + 1);
+    memcpy(&data[1], newName.data(), newName.size()+1);
   }
   NodeID ClientJoined::newID() const   { return data[0]; }
-  string ClientJoined::newName() const { return string((char*) &data.data()[1]); }
+  string ClientJoined::newName() const { return string((char*) &data[1]); }
   
   ClientInfo::ClientInfo(NodeID ID, string name)
   {
-    data.reserve(getSize());
     data[0] = ID;
-    memcpy(&data.data()[1], name.data(), name.length() + 1);
+    memcpy(&data[1], name.data(), name.size()+1);
   }
   NodeID ClientInfo::ID() const   { return data[0]; }
-  string ClientInfo::name() const { return string((char*) &data.data()[1]); }
+  string ClientInfo::name() const { return string((char*) &data[1]); }
+  
+  Leaving::Leaving()
+  {
+  }
   
   Kick::Kick(string reason)
   {
-    data.reserve(getSize());
-    memcpy(data.data(), reason.data(), reason.length() + 1);
+    memcpy(&data[0], reason.data(), reason.size()+1);
   }
-  string Kick::reason() const  { return string((char*) data.data()); }
+  string Kick::reason() const  { return string((char*) &data[0]); }
   
   Ban::Ban(string reason)
   {
-    data.reserve(getSize());
-    memcpy(data.data(), reason.data(), reason.length() + 1);
+    memcpy(&data[0], reason.data(), reason.size() + 1);
   }
   string Ban::reason() const  { return string((char*) data.data()); }
   
   ClientLeft::ClientLeft(NodeID oldID, uint8_t leaveCode, string reason)
   {
-    data.reserve(getSize());
     data[0] = oldID;
     data[1] = leaveCode;
-    memcpy(&data.data()[2], reason.data(), reason.length() + 1);
+    memcpy(&data[2], reason.data(), reason.size()+1);
   }
   NodeID ClientLeft::oldID() const  { return data[0]; }
   bool ClientLeft::normal() const   { return (data[1] == NORMAL); }
@@ -137,5 +133,7 @@ namespace wic
   const uint8_t ClientLeft::KICKED = 1;
   const uint8_t ClientLeft::BANNED = 2;
   
-  Shutdown::Shutdown() {}
+  Shutdown::Shutdown()
+  {
+  }
 }

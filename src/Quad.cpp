@@ -42,8 +42,6 @@ namespace wic
   }
   void Quad::draw(const Game& game)
   {
-    double cosine = cos(rotation);
-    double sine = sin(rotation);
     glColor4ub(color.red, color.green, color.blue, color.alpha);
     vertices[1].x = dimensions.x;
     vertices[2] = dimensions;
@@ -52,13 +50,9 @@ namespace wic
     for(unsigned i = 0; i < 4; i++)
     {
       Pair vertex = vertices[i];
-      vertex -= center;
-      vertex *= scale;
-      double x = vertex.x * cosine - vertex.y * sine;
-      double y = vertex.x * sine + vertex.y * cosine;
-      vertex = Pair(x,y);
-      if(!drawCentered)
-        vertex += center;
+      vertex.transform(rotation, scale, center);
+      if(drawCentered)
+        vertex -= center;
       vertex = convertLocation(vertex+location, game.getDimensions());
       glVertex2d(vertex.x, vertex.y);
     }

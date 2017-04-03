@@ -68,6 +68,10 @@ namespace wic
      *  \param center the center to rotate and scale around
      */
     void transform(double rotation, Pair scale, Pair center);
+    /** Defines unary negation.
+     *  \return the component-wise negation of the pair
+     */
+    Pair operator-() const;
     /** Defines addition between Pairs.
      *  \param other another Pair
      *  \return the component-wise sum of the Pairs

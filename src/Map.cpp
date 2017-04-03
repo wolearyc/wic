@@ -15,28 +15,12 @@
  * You should have received a copy of the GNU General Public License along with
  * this program.  If not, see <http://www.gnu.org/licenses/>.
  * ----------------------------------------------------------------------------
- * File:    Wic.h
+ * File:    Camera.cpp
  * ----------------------------------------------------------------------------
  */
-/** \file include this file to gain access to the wic library */
-#ifndef WIC_H
-#define WIC_H
-#include "Bounds.h"
-#include "Client.h"
-#include "Color.h"
-#include "Error.h"
-#include "Font.h"
-#include "Game.h"
-#include "Image.h"
-#include "Packet.h"
-#include "Pair.h"
-#include "Polygon.h"
-#include "Quad.h"
-#include "Server.h"
-#include "Splash.h"
-#include "Text.h"
-#include "Texture.h"
-#include "Actor.h"
-#include "Camera.h"
+/** \file */
 #include "Map.h"
-#endif
+namespace wic
+{
+
+}

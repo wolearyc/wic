@@ -15,28 +15,39 @@
  * You should have received a copy of the GNU General Public License along with
  * this program.  If not, see <http://www.gnu.org/licenses/>.
  * ----------------------------------------------------------------------------
- * File:    Wic.h
+ * File:    Camera.cpp
  * ----------------------------------------------------------------------------
  */
-/** \file include this file to gain access to the wic library */
-#ifndef WIC_H
-#define WIC_H
-#include "Bounds.h"
-#include "Client.h"
-#include "Color.h"
-#include "Error.h"
-#include "Font.h"
-#include "Game.h"
-#include "Image.h"
-#include "Packet.h"
-#include "Pair.h"
-#include "Polygon.h"
-#include "Quad.h"
-#include "Server.h"
-#include "Splash.h"
-#include "Text.h"
-#include "Texture.h"
-#include "Actor.h"
+/** \file */
 #include "Camera.h"
-#include "Map.h"
-#endif
+namespace wic
+{
+  Camera::Camera(Pair location, double rotation, double zoom, const Game& game)
+  : Locateable(location, game.getDimensions() / 2), Rotateable(rotation)
+  {
+    setZoom(zoom);
+  }
+  Pair Camera::getDrawLocation(Pair mapLocation) const
+  {
+    mapLocation.transform(-rotation, Pair(1,1) * zoom, location);
+    return mapLocation - location + center;
+  }
+  double Camera::getZoom() const
+  {
+    return zoom;
+  }
+  void Camera::setZoom(double zoom)
+  {
+    if(zoom <= 0)
+      throw InvalidArgument("zoom", "<= 0");
+    this->zoom = zoom;
+  }
+  double Camera::getDrawRotation(double mapRotation) const
+  {
+    return mapRotation - rotation + 3.14/2;
+  }
+  Pair Camera::getDrawScale(Pair mapScale) const
+  {
+    return mapScale * Pair(zoom, zoom);
+  }
+}

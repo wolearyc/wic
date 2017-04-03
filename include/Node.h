@@ -44,11 +44,15 @@ namespace wic
   class Node
   {
   public:
-    /** Constructor (binds socket).
+    /** Constructor (binds socket to port).
      *  \param name name of the node; limited to 20 characters
      *  \param socketPort the port on which to bind the socket
      */
     Node(string name, unsigned socketPort);
+    /** Constructor (binds socket to any port).
+     *  \param name name of the node; limited to 20 characters
+     */
+    Node(string name);
     /** Returns the unique ID. */
     NodeID getID() const;
     /** Returns the name. */
@@ -62,6 +66,7 @@ namespace wic
     /** Returns the name currently or previously associated with an ID. */
     string getNodeName(NodeID ID) const;
   protected:
+    void bindSocket(unsigned socketPort);
     static const uint8_t MAX_NAME_LEN;
     bool joined;
     NodeID ID;

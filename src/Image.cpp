@@ -55,8 +55,8 @@ namespace wic
     /* lower left corner */
     Pair vertex(0,0);
     vertex.transform(rotation, scale, center);
-    if(!drawCentered)
-      vertex += center;
+    if(drawCentered)
+      vertex -= center;
     vertex = convertLocation(vertex+location, windowDimensions);
     glTexCoord2f(bounds.lowerLeft.x / textureDimensions.x,
                  bounds.lowerLeft.y / textureDimensions.y);
@@ -64,8 +64,8 @@ namespace wic
     /* lower right corner */
     vertex = Pair(bounds.upperRight.x - bounds.lowerLeft.x, 0.0);
     vertex.transform(rotation, scale, center);
-    if(!drawCentered)
-      vertex += center;
+    if(drawCentered)
+      vertex -= center;
     vertex = convertLocation(vertex+location, windowDimensions);
     glTexCoord2f(bounds.upperRight.x / textureDimensions.x,
                  bounds.lowerLeft.y / textureDimensions.y);
@@ -73,8 +73,8 @@ namespace wic
     /* upper right corner */
     vertex = bounds.upperRight-bounds.lowerLeft;
     vertex.transform(rotation, scale, center);
-    if(!drawCentered)
-      vertex += center;
+    if(drawCentered)
+      vertex -= center;
     vertex = convertLocation(vertex+location, windowDimensions);
     glTexCoord2f(bounds.upperRight.x / textureDimensions.x,
                  bounds.upperRight.y / textureDimensions.y);
@@ -82,8 +82,8 @@ namespace wic
     /* upper left corner */
     vertex = Pair(0.0, bounds.upperRight.y - bounds.lowerLeft.y);
     vertex.transform(rotation, scale, center);
-    if(!drawCentered)
-      vertex += center;
+    if(drawCentered)
+      vertex -= center;
     vertex = convertLocation(vertex+location, windowDimensions); 
     glTexCoord2f(bounds.lowerLeft.x / textureDimensions.x,
                  bounds.upperRight.y / textureDimensions.y);

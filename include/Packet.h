@@ -72,6 +72,7 @@ namespace wic
     /** Default constructor. */
     Packet()
     {
+      data.resize(getSize());
     }
     uint8_t getType() const
     {

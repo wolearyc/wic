@@ -53,12 +53,13 @@ namespace wic
   {
     double cosine = std::cos(rotation);
     double sine = std::sin(rotation);
-    x = x - center.x;
-    y = y - center.y;
-    x = x * scale.x;
-    y = y * scale.y;
-    x = x * cosine - y * sine;
-    y = x * sine + y * cosine;
+    Pair tmp = (Pair(x,y) - center) * scale;
+    x = center.x + tmp.x * cosine - tmp.y * sine;
+    y = center.y + tmp.x * sine   + tmp.y * cosine;
+  }
+  Pair Pair::operator-() const
+  {
+    return Pair(-x, -y);
   }
   Pair Pair::operator+(const Pair& other) const 
   {

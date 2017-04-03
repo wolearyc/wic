@@ -36,13 +36,13 @@ namespace wic
     joined = true;
     ID = 0;
     maxID = maxClients;
-    addrs.resize(maxID);
+    addrs.resize(getMaxNodes());
     addrs[0] = addr;
-    used.resize(maxID);
+    used.resize(getMaxNodes());
     used[0] = true;
-    names.resize(maxID);
+    names.resize(getMaxNodes());
     names[0] = name;
-    ips.resize(maxID);
+    ips.resize(getMaxNodes());
     char tmp[20];
     inet_ntop(AF_INET, &addr.sin_addr, tmp, INET_ADDRSTRLEN);
     ips[0] = string(tmp);
@@ -121,24 +121,24 @@ namespace wic
         }
         
         // Determine connections. If full, respond and return
-        uint8_t connections = 0;
+        uint8_t nodes = 0;
         for(NodeID i = 0; i <= maxID; i++)
         {
-          if(used[i])
-            connections++;
+          if(isUsed(i))
+            nodes++;
         }
-        if(connections == getMaxNodes())
+        if(nodes == getMaxNodes())
         {
           JoinResponse joinResponse(JoinResponse::FULL, maxID, 0, name);
           size_t size = AbstractPacket::HEADER_SIZE + joinResponse.getSize();
-          joinResponse.toBuffer(buffer, Node::getID());
+          joinResponse.toBuffer(buffer, getID());
           sendto(sock, buffer, size, 0, (struct sockaddr*) &recvAddr, lenAddr);
           return true;
         }
         
-        // Join ok. Find a new ID, respond, and set up new connection.
+        // Join ok. Find a new ID, set up new connection, and respond.
         NodeID newID;
-        for(NodeID i = 0; i <= maxID; i++)
+        for(NodeID i = 1; i <= maxID; i++)
         {
           if(!used[i])
           {
@@ -146,10 +146,6 @@ namespace wic
             break;
           }
         }
-
-        JoinResponse joinResponse(JoinResponse::OK, getMaxID(), newID,
-                                  getName());
-        send(joinResponse, newID);
         
         // Set up new connection
         addrs[newID] = recvAddr;
@@ -158,6 +154,10 @@ namespace wic
         char tmp[20];
         inet_ntop(AF_INET, &recvAddr.sin_addr, tmp,INET_ADDRSTRLEN);
         ips[newID] = string(tmp);
+        
+        JoinResponse joinResponse(JoinResponse::OK, getMaxID(), newID,
+                                  getName());
+        send(joinResponse, newID);
         
         // Bring all clients up to speed.
         ClientJoined clientJoined(newID, joinRequest.name());
@@ -239,15 +239,18 @@ namespace wic
   }
   void Server::unban(string nameOrIP)
   {
+    bool found = false;
     for(unsigned i = 0; i < blacklist.size(); i++)
     {
       if(nameOrIP == blacklist[i])
       {
         blacklist.erase(blacklist.begin() + i);
         i--;
+        found = true;
       }
     }
-    throw Error("nameOrIP is not banned");
+    if(!found)
+      throw Error("nameOrIP is not banned");
   }
   NodeID Server::getNodeID(string nameOrIP) const
   {
