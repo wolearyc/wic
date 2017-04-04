@@ -70,6 +70,14 @@ namespace wic
     Color();
     /** Copy constructor. */
     Color(const Color& other);
+    /** Lightens, if possible.
+     *  \param factor factor to add.
+     */
+    void lighten(uint8_t factor);
+    /** Darkens, if possible.
+     *  \param factor factor to subtract.
+     */
+    void darken(uint8_t factor);
     uint8_t red;    /**< The red component */
     uint8_t green;  /**< The green component */
     uint8_t blue;   /**< The blue component */

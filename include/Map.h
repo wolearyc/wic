@@ -77,7 +77,7 @@ namespace wic
                      { return actor.shouldRemove(); });
     }
   protected:
-    vector<ActorClass> actors; /**< Currently active actors */
+    vector<ActorClass> actors; /**< List of actors */
   };
   
 }

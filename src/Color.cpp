@@ -56,4 +56,34 @@ namespace wic
   : Color(255,255,255)
   {
   }
+  void Color::lighten(uint8_t factor)
+  {
+    if(factor > 255 - red)
+      red = 255;
+    else
+      red += factor;
+    if(factor > 255 - green)
+      green = 255;
+    else
+      green += factor;
+    if(factor > 255 - blue)
+      blue = 255;
+    else
+      blue += factor;
+  }
+  void Color::darken(uint8_t factor)
+  {
+    if(factor > red)
+      red = 0;
+    else
+      red -= factor;
+    if(factor > green)
+      green = 0;
+    else
+      green -= factor;
+    if(factor > blue)
+      blue = 0;
+    else
+      blue -= factor;
+  }
 }

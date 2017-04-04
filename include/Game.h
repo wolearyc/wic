@@ -220,6 +220,10 @@ namespace wic
     Pair getDimensions() const;
     /** Returns the screen pixel density (pixels/square inch) */
     Pair getPixelDensity() const;
+    /** Initializes openGL context for a new thread. Calling this function is
+     *  required if you wish to do any drawing outside the main thread.
+     */
+    void loadContext() const;
   private:
     GLFWwindow* window;
     Pair dimensions;

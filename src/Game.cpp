@@ -102,6 +102,7 @@ namespace wic
       throw InvalidArgument("dimensions.y", "< 32");
     if(fps == 0)
       throw InvalidArgument("fps", "zero");
+    
     if(!glfwInit())
       throw InternalError("glfw failed to initialize");
     glfwWindowHint(GLFW_REFRESH_RATE, fps);
@@ -221,7 +222,10 @@ namespace wic
   {
     return pixelDensity;
   }
-
+  void Game::loadContext() const
+  {
+    glfwMakeContextCurrent(window);
+  }
   Pair convertLocation(Pair location, Pair dimensions)
   {
     Pair result = location * Pair(2,2);

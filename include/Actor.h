@@ -35,9 +35,11 @@ namespace wic
   public:
     /** Default constructor. */
     Actor();
-    /** Draws actor's sprite at a screen location. Implemented in subclasses.
+    /** Draws actor's sprite. Implemented in subclasses.
      *  \param game the game
-     *  \param screenLocation a specified screen location 
+     *  \param spriteLocation a specified location
+     *  \param spriteRocation a specified rotation
+     *  \param spriteScale a specified scale
      */
     virtual void draw(const Game& game, Pair spriteLocation,
                       double spriteRotation, Pair spriteScale) = 0;
