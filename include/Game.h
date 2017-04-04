@@ -23,6 +23,7 @@
 #define GAME_H
 #include <stdlib.h>
 #include <unistd.h>
+#include <deque>
 #include "GLFW/glfw3.h"
 #include "FreeType/ft2build.h"
 #include FT_FREETYPE_H
@@ -220,11 +221,13 @@ namespace wic
     Pair getDimensions() const;
     /** Returns the screen pixel density (pixels/square inch) */
     Pair getPixelDensity() const;
-    /** Initializes openGL context for a new thread. Calling this function is
-     *  required if you wish to do any drawing outside the main thread.
-     */
-    void loadContext() const;
   private:
+    // Submits a texture data for upload on updt, deleted the buffer.
+    void submitTextureDataForUpload(unsigned* textureDataDest, int wrap,
+                                    int filter, Pair dimensions,
+                                    unsigned char* buffer);
+    void uploadTexture(std::tuple<unsigned*, int, int, Pair, unsigned char*>);
+    std::deque<std::tuple<unsigned*, int, int, Pair, unsigned char*>> textureData;
     GLFWwindow* window;
     Pair dimensions;
     Pair pixelDensity;

@@ -167,6 +167,14 @@ namespace wic
       float delay = secondsPerFrame - (glfwGetTime() - previousTime);
       if(delay > 0)
         usleep(delay * 1000000);
+      
+      // Texture upload
+      while(!textureData.empty())
+      {
+        uploadTexture(textureData.front());
+        textureData.pop_front();
+      }
+      
       resetInput();
       glfwSwapBuffers(window);
       glFlush();
@@ -179,6 +187,37 @@ namespace wic
       return CONTINUE;
     }
     return TERMINATE;
+  }
+  void Game::uploadTexture(std::tuple<unsigned*, int, int, Pair, unsigned char*>
+                           data)
+  {
+    unsigned* textureDataDest = std::get<0>(data);
+    int wrap = std::get<1>(data);
+    int filter = std::get<2>(data);
+    Pair dimensions = std::get<3>(data);
+    unsigned char* buffer = std::get<4>(data);
+    
+    glGenTextures(1, textureDataDest);
+    int textureData = *textureDataDest;
+    glBindTexture(GL_TEXTURE_2D, textureData);
+    if(wrap == GL_CLAMP_TO_BORDER)
+    {
+      float color[] = { 1.0f, 1.0f, 1.0f, 0.0f };
+      glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, color);
+    }
+    
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, (GLint) wrap);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, (GLint) wrap);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (GLint) filter);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, (GLint) filter);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, dimensions.x, dimensions.y,
+                 0, GL_RGBA, GL_UNSIGNED_BYTE, buffer);
+    delete[] buffer;
+    if(glGetError() == GL_OUT_OF_MEMORY)
+    {
+      glDeleteTextures(1, textureDataDest);
+      throw Error("out of GPU memory");
+    }
   }
   void Game::exit()
   {
@@ -222,9 +261,12 @@ namespace wic
   {
     return pixelDensity;
   }
-  void Game::loadContext() const
+  void Game::submitTextureDataForUpload(unsigned* textureDataDest, int wrap,
+                                        int filter, Pair dimensions,
+                                        unsigned char* buffer)
   {
-    glfwMakeContextCurrent(window);
+    textureData.push_back(std::tuple<unsigned*, int, int, Pair, unsigned char*>
+                          (textureDataDest, wrap, filter, dimensions, buffer));
   }
   Pair convertLocation(Pair location, Pair dimensions)
   {

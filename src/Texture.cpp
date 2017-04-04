@@ -22,8 +22,8 @@
 namespace wic
 {
   Texture::Texture(unsigned char* buffer, Pair dimensions, enum Format format,
-                   enum Filter filter, enum Wrap wrap)
-  : dimensions(dimensions)
+                   enum Filter filter, enum Wrap wrap, Game& game)
+  : dimensions(dimensions), data(0)
   {
     if(buffer == nullptr)
       throw InvalidArgument("buffer", "should not be null");
@@ -98,28 +98,13 @@ namespace wic
     for(int x = 0; x < xDimension; x++)
       delete[] temp[x];
     delete[] temp;
-    glGenTextures(1, &data);
-    glBindTexture(GL_TEXTURE_2D, data);
-    if(wrap == Wrap::Stop)
-    {
-      float color[] = { 1.0f, 1.0f, 1.0f, 0.0f };
-      glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, color);
-    }
-    
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, (GLint) wrap);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, (GLint) wrap);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (GLint) filter);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, (GLint) filter);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, dimensions.x, dimensions.y,
-                 0, GL_RGBA, GL_UNSIGNED_BYTE, formattedBuffer);
-    delete[] formattedBuffer;
-    if(glGetError() == GL_OUT_OF_MEMORY)
-    {
-      glDeleteTextures(1, &data);
-      throw Error("out of GPU memory");
-    }
+    game.submitTextureDataForUpload(&data, (int) wrap, (int) filter, dimensions,
+                                    formattedBuffer);
+    // Texture binding and buffer deallocation done at next updt.
   }
-  Texture::Texture(string filepath, enum Filter filter, enum Wrap wrap)
+  Texture::Texture(string filepath, enum Filter filter, enum Wrap wrap,
+                   Game& game)
+  : data(0)
   {
     unsigned char* buffer = nullptr;
     int x = 0;
@@ -128,8 +113,12 @@ namespace wic
     Pair dimensions(x,y);
     if(buffer == nullptr)
       throw InvalidFile(filepath);
-    Texture(buffer, dimensions, Format::RGBA, filter, wrap);
+    Texture(buffer, dimensions, Format::RGBA, filter, wrap, game);
     SOIL_free_image_data(buffer);
+  }
+  Texture::Texture(string filepath, Game& game)
+  : Texture(filepath, Filter::Nearest, Wrap::Repeat, game)
+  {
   }
   Texture::Texture()
   : data(0), dimensions(Pair())
@@ -137,7 +126,8 @@ namespace wic
   }
   Texture::~Texture()
   {
-    glDeleteTextures(1, &data);
+    if(data != 0)
+      glDeleteTextures(1, &data);
   }
   Pair Texture::getDimensions() const
   {

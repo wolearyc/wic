@@ -22,7 +22,7 @@
 #ifndef TEXTURE_H
 #define TEXTURE_H
 #include <SOIL/SOIL.h>
-#include <OpenGL/gl.h>
+#include "Game.h"
 #include "Pair.h"
 #include "Error.h"
 namespace wic
@@ -64,23 +64,30 @@ namespace wic
      *  \param format the buffer format
      *  \param filter the desired texture filter
      *  \param wrap the texture wrapping
+     *  \param game the game
      */
     Texture(unsigned char* buffer, Pair dimensions, enum Format format,
-            enum Filter filter, enum Wrap wrap);
+            enum Filter filter, enum Wrap wrap, Game& game);
     /** Constructor (from image file).
      *  \param filepath an absolute or relative filepath to a non-1bpp and 
      *         non-RLE, BMP, non-interlaced PNG, JPEG, TGA, DDS, PSD, or HDR file
      *  \param filter the texture filter
      *  \param wrap the texture wrap
      */
-    Texture(string filepath, enum Filter filter, enum Wrap wrap);
+    Texture(string filepath, enum Filter filter, enum Wrap wrap, Game& game);
+    /** Constructor (image file, nearest filter and repeat wrapping)
+     *  \param filepatha n absolute or relative filepath to a non-1bpp and
+     *         non-RLE, BMP, non-interlaced PNG, JPEG, TGA, DDS, PSD, or HDR file
+     *  \param game the game
+     */
+    Texture(string filepath, Game& game);
     /** Default constructor */
     Texture();
     ~Texture();
     /** Returns the dimensions. */
     Pair getDimensions() const;
   private:
-    unsigned int data;
+    unsigned data;
     Pair dimensions;
   };
 }
