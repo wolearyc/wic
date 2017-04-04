@@ -24,17 +24,19 @@ namespace wic
   LoadingScreen::LoadingScreen(const Game& game)
   : progress(0)
   {
-    frame = Quad(game.getDimensions() / 2, Pair(100,20), Color::WicGray);
-    bar = Quad(frame.location - frame.getGeoCenter(), Pair(0,20),
-               Color::WicOrange);
-    frame.drawCentered = true;
-    frame.center = frame.getGeoCenter();
+    outerFrame = Quad(game.getDimensions() / 2, Pair(100,20), Color::WicGray);
+    innerFrame = Quad(game.getDimensions() / 2, Pair(96, 16), Color::Black);
+    Pair barLocation = innerFrame.location - innerFrame.getGeoCenter() + 1;
+    bar = Quad(barLocation, Pair(0,14), Color::WicOrange);
+    outerFrame.drawCentered = true;
+    outerFrame.center = outerFrame.getGeoCenter();
+    innerFrame.drawCentered = true;
+    innerFrame.center = innerFrame.getGeoCenter();
   }
   void LoadingScreen::display(Game& game)
   {
     bool lighten = true;
     int stage = 0;
-    const int MAX_STAGE = 15;
     while(game.updt() == CONTINUE && progress < 100)
     {
       bar.dimensions.x = progress;
@@ -42,20 +44,21 @@ namespace wic
       // Pulse bar
       if(lighten)
       {
-        bar.color.lighten(1);
-        stage++;
+        bar.color.lighten(3);
+        stage+=3;
       }
       if(!lighten)
       {
         bar.color.darken(1);
         stage--;
       }
-      if(stage == MAX_STAGE)
+      if(stage == 15)
         lighten = false;
-      if(stage == -MAX_STAGE)
+      if(stage == -15)
         lighten = true;
       
-      frame.draw(game);
+      outerFrame.draw(game);
+      innerFrame.draw(game);
       bar.draw(game);
     }
   }

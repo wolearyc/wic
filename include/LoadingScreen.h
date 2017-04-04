@@ -44,7 +44,8 @@ namespace wic
      */
     void setProgress(unsigned progress);
   private:
-    Quad frame;
+    Quad outerFrame;
+    Quad innerFrame;
     Quad bar;
     atomic<unsigned> progress;
   };

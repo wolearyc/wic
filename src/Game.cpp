@@ -166,7 +166,7 @@ namespace wic
     {
       float delay = secondsPerFrame - (glfwGetTime() - previousTime);
       if(delay > 0)
-        usleep(delay * 1000);
+        usleep(delay * 1000000);
       resetInput();
       glfwSwapBuffers(window);
       glFlush();

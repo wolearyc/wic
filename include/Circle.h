@@ -15,30 +15,35 @@
  * You should have received a copy of the GNU General Public License along with
  * this program.  If not, see <http://www.gnu.org/licenses/>.
  * ----------------------------------------------------------------------------
- * File:    Wic.h
+ * File:    Circle.h
  * ----------------------------------------------------------------------------
  */
-/** \file include this file to gain access to the wic library */
-#ifndef WIC_H
-#define WIC_H
-#include "Bounds.h"
-#include "Client.h"
-#include "Color.h"
-#include "Error.h"
-#include "Font.h"
-#include "Game.h"
-#include "Image.h"
-#include "Packet.h"
-#include "Pair.h"
-#include "Polygon.h"
-#include "Quad.h"
-#include "Server.h"
-#include "Splash.h"
-#include "Text.h"
-#include "Texture.h"
-#include "Actor.h"
-#include "Camera.h"
-#include "Map.h"
-#include "LoadingScreen.h"
-#include "Circle.h"
+/** \file */
+#ifndef CIRCLE_H
+#define CIRCLE_H
+#include "Interfaces.h"
+namespace wic
+{
+  /** A filled circle. */
+  class Circle
+  : public Locateable, public Rotateable, public Scaleable, public Colorable,
+    public Drawable
+  {
+  public:
+    /** Constructor.
+     *  \param location the screen location
+     *  \param radius the radius
+     *  \param color the color
+     */
+    Circle(Pair location, unsigned radius, Color color);
+    /** Default constructor. */
+    Circle();
+    /** Copy constructor. */
+    Circle(const Circle& other);
+    void draw(const Game& game);
+    /** Returns the geometric center. */
+    Pair getGeoCenter() const;
+    unsigned radius;      /**< the radius */
+  };
+}
 #endif
