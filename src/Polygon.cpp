@@ -51,7 +51,7 @@ namespace wic
     result /= vertices.size();
     return result;
   }
-  void Polygon::draw(const Game& game)
+  void Polygon::draw()
   {
     double cosine = cos(rotation);
     double sine = sin(rotation);
@@ -63,7 +63,7 @@ namespace wic
       vertex.transform(rotation, scale, center);
       if(drawCentered)
         vertex -= center;
-      vertex = convertLocation(vertex+location, game.getDimensions());
+      vertex = private_wic::getOpenGLVertex(vertex+location);
       glVertex2d(vertex.x, vertex.y);
     }
     glEnd();

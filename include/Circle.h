@@ -40,7 +40,7 @@ namespace wic
     Circle();
     /** Copy constructor. */
     Circle(const Circle& other);
-    void draw(const Game& game);
+    void draw();
     /** Returns the geometric center. */
     Pair getGeoCenter() const;
     unsigned radius;      /**< the radius */

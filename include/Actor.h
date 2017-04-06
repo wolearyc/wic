@@ -36,17 +36,14 @@ namespace wic
     /** Default constructor. */
     Actor();
     /** Draws actor's sprite. Implemented in subclasses.
-     *  \param game the game
      *  \param spriteLocation a specified location
      *  \param spriteRocation a specified rotation
      *  \param spriteScale a specified scale
      */
-    virtual void draw(const Game& game, Pair spriteLocation,
-                      double spriteRotation, Pair spriteScale) = 0;
-    /** Defines the actors behavior. Implemented in subclasses.
-     *  \param game the game
-     */
-    virtual void act(const Game& game) = 0;
+    virtual void draw(Pair spriteLocation, double spriteRotation,
+                      Pair spriteScale) = 0;
+    /** Defines the actors behavior. Implemented in subclasses. */
+    virtual void act() = 0;
     /** Marks the actor for removal from the map. */
     void markForRemoval();
     /** Returns whether or not to remove from the map */

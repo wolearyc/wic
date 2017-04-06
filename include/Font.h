@@ -43,9 +43,8 @@ namespace wic
      * \param point the point of the font; must be nonzero
      * \param antialias whether or not to antialias the font. Small, antialiased
      *        fonts ca be difficult to read
-     * \param game the game
      */
-    Font(string filepath, unsigned point, bool antialias, const Game& game);
+    Font(string filepath, unsigned point, bool antialias);
     /** Default constructor */
     Font();
     ~Font();

@@ -40,7 +40,7 @@ namespace wic
   {
     return dimensions / 2;
   }
-  void Quad::draw(const Game& game)
+  void Quad::draw()
   {
     glColor4ub(color.red, color.green, color.blue, color.alpha);
     vertices[1].x = dimensions.x;
@@ -53,7 +53,7 @@ namespace wic
       vertex.transform(rotation, scale, center);
       if(drawCentered)
         vertex -= center;
-      vertex = convertLocation(vertex+location, game.getDimensions());
+      vertex = private_wic::getOpenGLVertex(vertex+location);
       glVertex2d(vertex.x, vertex.y);
     }
     glEnd();

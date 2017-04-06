@@ -24,12 +24,15 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <deque>
+#include <mutex>
+#include <vector>
 #include "GLFW/glfw3.h"
 #include "FreeType/ft2build.h"
 #include FT_FREETYPE_H
 #include "Pair.h"
 #include "Error.h"
 using std::string;
+using std::vector;
 namespace wic
 {
   /** Enumerates keyboard keys and mouse buttons */
@@ -164,79 +167,60 @@ namespace wic
   };
   extern const unsigned CONTINUE;  /**< Code indicating window is still open */
   extern const unsigned TERMINATE; /**< Code indicating window is closed */
-  /** Wic's primary system interface Game is in charge of the OS window, time, 
-   *  input, and graphic output. The first step in any game is to construct a 
-   *  Game.
+  /** Initializes Wic and opens a window.
+   *  \param title the desired window title
+   *  \param dimensions the desired window dimensions; both components must be
+   *         greater than or equal to 32
+   *  \param fps the desired number of frames to draw per second; must be > 0
+   *  \param resizeable whether or not the window should be resizeable by the
+   *         user, ignored if the game is fullscreen
+   *  \param fullscreen whether or not the game should run fullscreen
+   *  \param samples the number of samples to use with antialiasing, a value of 0
+   *         disables antialiasing
    */
-  class Game
-  {
-    friend class Texture;
-    friend class Font;
-  public:
-    /** Constructor.
-     *  \param title the desired window title
-     *  \param dimensions the desired window dimensions; both components must be
-     *         greater than or equal to 32
-     *  \param fps the desired number of frames to draw per second; must be > 0
-     *  \param resizeable whether or not the window should be resizeable by the
-     *         user, ignored if the game is fullscreen
-     *  \param fullscreen whether or not the game should run fullscreen
-     *  \param samples the number of samples to use with antialiasing, a value of 0
-     *         disables antialiasing
-     */
-    Game(string title, Pair dimensions, unsigned fps,
-         bool resizeable, bool fullscreen, unsigned samples);
-    ~Game();
-    /** Advances to the next frame. This function will wait a certain amount of
-     *  time before returning, This mechanism ensures that the fps is 
-     *  maintained.
-     *  \return TERMINATE if the window has been closed and the program should
-     *          exit. CONTINUE otherwise.
-     */
-    unsigned updt();
-    /** Forces game to exit. This function closes the window and ensures that
-     *  the next call to updt will return TERMINATE.
-     */
-    void exit();
-    /** Returns the time since the last updt in seconds. */
-    double getDelta() const;
-    /** Returns whether or not a keyboard key/mouse button is being depressed.
-     *  \param key the keyboard key/mouse button
-     */
-    bool isKeyDown(enum Key key) const;
-    /** Returns whether or not a keyboard key/mouse button was pressed since the 
-     *  last call to updt.
-     *  \param key the keyboard key/mouse button
-     */
-    bool isKeyPressed(enum Key key) const;
-    /** Returns the human-readable keyboard input since the last call to updt */
-    string getInput() const;
-    /** Returns the cursor location. */
-    Pair getCursorLocation() const;
-    /** Returns the scroll wheel/ball offset since last call to updt. */
-     Pair getScrollOffset() const;
-    /** Returns the game time in seconds. */
-    double getTime() const;
-    /** Returns the pixel dimensions. */
-    Pair getDimensions() const;
-    /** Returns the screen pixel density (pixels/square inch) */
-    Pair getPixelDensity() const;
-  private:
-    // Submits a texture data for upload on updt, deleted the buffer.
-    void submitTextureDataForUpload(unsigned* textureDataDest, int wrap,
-                                    int filter, Pair dimensions,
-                                    unsigned char* buffer);
-    void uploadTexture(std::tuple<unsigned*, int, int, Pair, unsigned char*>);
-    std::deque<std::tuple<unsigned*, int, int, Pair, unsigned char*>> textureData;
-    GLFWwindow* window;
-    Pair dimensions;
-    Pair pixelDensity;
-    double secondsPerFrame;
-    double previousTime;
-    double delta;
-    FT_Library FTLibrary;
-  };
-  Pair convertLocation(Pair location, Pair dimensions);
-  
+  void openWindow(string title, Pair dimensions, unsigned fps, bool resizeable,
+                  bool fullscreen, unsigned samples);
+  /** Advances to the next frame. This function will wait a certain amount of
+   *  time before returning, ensuring that the fps is maintained.
+   *  \return TERMINATE if the window has been closed and the program should
+   *          exit. CONTINUE otherwise.
+   */
+  unsigned updt();
+  /** Forces game to exit. This function closes the window and ensures that
+   *  the next call to updt will return TERMINATE.
+   */
+  void exit();
+  /** Deinitializes the (hopefully) closed window and performs cleanup. */
+  void cleanUp();
+  /** Returns the time since the last updt in seconds. */
+  double getDelta();
+  /** Returns whether or not a keyboard key/mouse button is being depressed.
+   *  \param key the keyboard key/mouse button
+   */
+  bool isKeyDown(enum Key key);
+  /** Returns whether or not a keyboard key/mouse button was pressed since the
+   *  last call to updt.
+   *  \param key the keyboard key/mouse button
+   */
+  bool isKeyPressed(enum Key key);
+  /** Returns the human-readable keyboard input since the last call to updt */
+  string getInput();
+  /** Returns the cursor location. */
+  Pair getCursorLocation();
+  /** Returns the scroll wheel/ball offset since last call to updt. */
+  Pair getScrollOffset();
+  /** Returns the game time in seconds. */
+  double getTime();
+  /** Returns the pixel dimensions. */
+  Pair getWindowDimensions();
+  /** Returns the screen pixel density (pixels/square inch) */
+  Pair getPixelDensity();
+}
+namespace private_wic
+{
+  void submitTexture(unsigned* textureDataDest, int wrap, int filter,
+                     wic::Pair dimensions, vector<uint8_t> buffer);
+  wic::Pair getOpenGLVertex(wic::Pair location);
+  FT_Library getFTLibrary();
 }
 #endif

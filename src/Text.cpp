@@ -54,7 +54,7 @@ namespace wic
   {
     return str;
   }
-  void Text::draw(const Game& game)
+  void Text::draw()
   {
     for(unsigned i = 0; i < str.length(); i++)
     {
@@ -74,7 +74,7 @@ namespace wic
         images[i].rotation = rotation;
         images[i].scale = scale;
         images[i].center = center;
-        images[i].draw(game);
+        images[i].draw();
       }
     }
   }

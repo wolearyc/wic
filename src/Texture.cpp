@@ -21,22 +21,72 @@
 #include "Texture.h"
 namespace wic
 {
-  Texture::Texture(unsigned char* buffer, Pair dimensions, enum Format format,
-                   enum Filter filter, enum Wrap wrap, Game& game)
-  : dimensions(dimensions), data(0)
+  Texture::Texture(vector<uint8_t> buffer, Pair dimensions, enum Format format,
+                   enum Filter filter, enum Wrap wrap)
+  : Texture()
   {
+    init(buffer, dimensions, format, filter, wrap);
+  }
+  Texture::Texture(string filepath, enum Filter filter, enum Wrap wrap)
+  : Texture()
+  {
+    unsigned char* buffer = nullptr;
+    int x = 0;
+    int y = 0;
+    buffer = SOIL_load_image(filepath.data(), &x, &y, 0, SOIL_LOAD_RGBA);
+    dimensions = Pair(x,y);
     if(buffer == nullptr)
-      throw InvalidArgument("buffer", "should not be null");
+      throw InvalidFile(filepath);
+    int size = x * y * 4;
+    init(vector<uint8_t>(buffer, buffer+size), dimensions,
+         Format::RGBA, filter, wrap);
+    SOIL_free_image_data(buffer);
+  }
+  Texture::Texture(string filepath)
+  : Texture(filepath, Filter::Nearest, Wrap::Repeat)
+  {
+  }
+  Texture::Texture(const Texture& other)
+  : data(other.data), dimensions(other.dimensions), loaded(other.loaded),
+    formattedBuffer(other.formattedBuffer), filter(other.filter),
+    wrap(other.wrap)
+  {
+  }
+  Texture::Texture()
+  : data(0), dimensions(Pair()), loaded(false), filter(Filter::Nearest),
+    wrap(Wrap::Repeat)
+  {
+  }
+  Texture::~Texture()
+  {
+    if(loaded)
+      glDeleteTextures(1, &data);
+  }
+  void Texture::load()
+  {
+    private_wic::submitTexture(&data, (int) wrap, (int) filter,
+                               dimensions, formattedBuffer);
+  }
+  Pair Texture::getDimensions() const
+  {
+    return dimensions;
+  }
+  void Texture::init(vector<uint8_t> buffer, Pair dimensions, enum Format format,
+                     enum Filter filter, enum Wrap wrap)
+  {
     if(dimensions.x < 1)
       throw InvalidArgument("dimensions.x", "zero");
     if(dimensions.y < 1)
       throw InvalidArgument("dimensions.y", "zero");
     
+    this->dimensions = dimensions;
+    this->filter = filter;
+    this->wrap = wrap;
+    
     int xDimension = (int) (dimensions.x) * 4;
     int yDimension = (int) dimensions.y;
-    unsigned char** temp = new unsigned char*[xDimension];
-    for(int x = 0; x < xDimension; x++)
-      temp[x] = new unsigned char[yDimension];
+    
+    vector<vector<uint8_t>> temp(xDimension, vector<uint8_t>(yDimension));
     for(int y = 0; y < yDimension; y++)
     {
       for(int x = 0; x < xDimension; x+=4)
@@ -84,8 +134,8 @@ namespace wic
         }
       }
     }
-    unsigned char* formattedBuffer = new unsigned char[xDimension*yDimension];
-
+    formattedBuffer.resize(xDimension * yDimension);
+    
     int formattedBufferIndex = 0;
     for(int y = yDimension-1; y >= 0; y--) /* flips texture */
     {
@@ -95,42 +145,6 @@ namespace wic
         formattedBufferIndex++;
       }
     }
-    for(int x = 0; x < xDimension; x++)
-      delete[] temp[x];
-    delete[] temp;
-    game.submitTextureDataForUpload(&data, (int) wrap, (int) filter, dimensions,
-                                    formattedBuffer);
     // Texture binding and buffer deallocation done at next updt.
-  }
-  Texture::Texture(string filepath, enum Filter filter, enum Wrap wrap,
-                   Game& game)
-  : data(0)
-  {
-    unsigned char* buffer = nullptr;
-    int x = 0;
-    int y = 0;
-    buffer = SOIL_load_image(filepath.data(), &x, &y, 0, SOIL_LOAD_RGBA);
-    Pair dimensions(x,y);
-    if(buffer == nullptr)
-      throw InvalidFile(filepath);
-    Texture(buffer, dimensions, Format::RGBA, filter, wrap, game);
-    SOIL_free_image_data(buffer);
-  }
-  Texture::Texture(string filepath, Game& game)
-  : Texture(filepath, Filter::Nearest, Wrap::Repeat, game)
-  {
-  }
-  Texture::Texture()
-  : data(0), dimensions(Pair())
-  {
-  }
-  Texture::~Texture()
-  {
-    if(data != 0)
-      glDeleteTextures(1, &data);
-  }
-  Pair Texture::getDimensions() const
-  {
-    return dimensions;
   }
 }

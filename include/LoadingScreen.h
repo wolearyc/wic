@@ -31,14 +31,14 @@ namespace wic
   {
   public:
     /** Constructor.
-     *  \param game the game
+
      */
-    LoadingScreen(const Game& game);
+    LoadingScreen();
     /** Displays the loading screen. This function returns with the progress is
      *  set to 100%. 
-     *  \param game the game
+
      */
-    void display(Game& game);
+    void display();
     /** Safely sets the progress (can be called by any thread).
      *  \param progress the progress percentage
      */

@@ -42,7 +42,7 @@ namespace wic
     Polygon();
     /** Copy constructor. */
     Polygon(const Polygon& other);
-    void draw(const Game& game);
+    void draw();
     /** Returns the geometric center. */
     Pair getGeoCenter() const;
     /** Sets new vertices.

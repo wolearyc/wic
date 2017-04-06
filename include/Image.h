@@ -42,7 +42,7 @@ namespace wic
     Image(const Image& other);
     /** Returns the geometric center. */
     Pair getGeoCenter() const;
-    void draw(const Game& game);
+    void draw();
     Bounds getWholeBounds();
     const Texture* texture;     /**< the texture */
   };

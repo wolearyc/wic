@@ -22,17 +22,17 @@
 #include "Splash.h"
 namespace wic
 {
-  void drawSplash(Color backgroundColor, Color textColor, Game& game)
+  void drawSplash(Color backgroundColor, Color textColor)
   {
     backgroundColor.alpha = 0;
     textColor.alpha = 0;
     
-    Quad background(Pair(), game.getDimensions(), backgroundColor);
+    Quad background(Pair(), getWindowDimensions(), backgroundColor);
 
-    double min_dim = fmin(game.getDimensions().x, game.getDimensions().y);
+    double min_dim = fmin(getWindowDimensions().x, getWindowDimensions().y);
     Pair scaleMultiplier = Pair(min_dim, min_dim) / Pair(500,500);
     
-    unsigned char wicBuffer[] =
+    vector<uint8_t> wicBuffer =
     {
       1,0,0,0,1,0,1,0,0,1,1,1,
       1,0,0,0,1,0,1,0,1,0,0,0,
@@ -42,14 +42,15 @@ namespace wic
     };
     Texture wicTexture(wicBuffer, Pair(12,5), Format::Mono, Filter::Nearest,
                        Wrap::Repeat);
-    Pair location = game.getDimensions() / 2;
+    wicTexture.load();
+    Pair location = getWindowDimensions() / 2;
     Image wic(location, &wicTexture);
     wic.scale = Pair(10,10) * scaleMultiplier;
     wic.center = wic.getGeoCenter();
     wic.drawCentered = true;
     wic.color = textColor;
     
-    unsigned char engineBuffer[] =
+    vector<uint8_t> engineBuffer =
     {
       1,1,1,0,1,0,0,1,0,0,1,1,0,1,0,1,0,0,1,0,1,1,1,
       1,0,0,0,1,1,0,1,0,1,0,0,0,1,0,1,1,0,1,0,1,0,0,
@@ -59,6 +60,7 @@ namespace wic
     };
     Texture engineTexture(engineBuffer, Pair(23,5),Format::Mono, Filter::Nearest,
                           Wrap::Repeat);
+    engineTexture.load();
     location.x += wic.scale.x * wicTexture.getDimensions().x / 2;
     location.y -= wic.scale.y * (wicTexture.getDimensions().y / 2 + 1);
     location = Pair((int) location.x, (int) location.y);
@@ -68,7 +70,8 @@ namespace wic
     engine.center.x *= 2;
     engine.drawCentered = true;
     engine.color = textColor;
-    unsigned char versionBuffer[] =
+    
+    vector<uint8_t> versionBuffer =
     {
       0,0,0,1,1,0,0,1,1,
       0,0,0,0,1,0,0,0,1,
@@ -76,9 +79,9 @@ namespace wic
       1,0,1,0,1,0,0,0,1,
       0,1,0,0,1,0,1,0,1,
     };
-    
     Texture versionTexture(versionBuffer, Pair(9,5), Format::Mono,
                            Filter::Nearest, Wrap::Repeat);
+    versionTexture.load();
     location.y -= engine.scale.y * (engineTexture.getDimensions().y / 2 + 1);
     location.y = (int) location.y;
     Image version(location, &versionTexture);
@@ -91,7 +94,7 @@ namespace wic
     
     double time;
     int stage = 0;
-    while(game.updt() == CONTINUE)
+    while(updt() == CONTINUE)
     {
       if(!stage)
       {
@@ -101,11 +104,11 @@ namespace wic
         version.color.alpha    += 3;
         if(version.color.alpha == 255)
         {
-          time = game.getTime();
+          time = getTime();
           stage++;
         }
       }
-      else if(stage == 1 && game.getTime() - time >= 1.0)
+      else if(stage == 1 && getTime() - time >= 1.0)
         stage++;
       else if(stage == 2)
       {
@@ -116,10 +119,10 @@ namespace wic
         if(!version.color.alpha)
           break;
       }
-      background.draw(game);
-      wic.draw(game);
-      engine.draw(game);
-      version.draw(game);
+      background.draw();
+      wic.draw();
+      engine.draw();
+      version.draw();
     }
   }
 }

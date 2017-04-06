@@ -21,6 +21,13 @@
 #include "Game.h"
 namespace wic
 {
+  static GLFWwindow* window;
+  static Pair dimensions_;
+  static Pair pixelDensity;
+  static double secondsPerFrame;
+  static double previousTime;
+  static double delta;
+  static FT_Library FTLibrary;
   const unsigned CONTINUE = 1;
   const unsigned TERMINATE = 2;
   static bool focus = false;
@@ -29,6 +36,9 @@ namespace wic
   static string input;
   static Pair cursorLocation;
   static Pair scrollOffset;
+  typedef std::tuple<unsigned*, int, int, Pair, vector<uint8_t>> TextureData;
+  static std::deque<TextureData> textureData;
+  static std::mutex queueMutex;
   void resetInput()
   {
     memset(pressedKeys, 0, sizeof(pressedKeys));
@@ -90,9 +100,8 @@ namespace wic
     }
   }
   static bool initialized = false;
-  Game::Game(string title, Pair dimensions, unsigned fps,
-             bool resizeable, bool fullscreen, unsigned samples)
-  : dimensions(dimensions)
+  void openWindow(string title, Pair dimensions, unsigned fps,
+                  bool resizeable, bool fullscreen, unsigned samples)
   {
     if(initialized)
       throw Error("a game is already initialized");
@@ -103,6 +112,7 @@ namespace wic
     if(fps == 0)
       throw InvalidArgument("fps", "zero");
     
+    dimensions_ = dimensions;
     if(!glfwInit())
       throw InternalError("glfw failed to initialize");
     glfwWindowHint(GLFW_REFRESH_RATE, fps);
@@ -154,48 +164,13 @@ namespace wic
     delta = 0.0;
     initialized = true;
   }
-  Game::~Game() 
-  {
-    glfwDestroyWindow(window);
-    glfwTerminate();
-    initialized = false;
-  }
-  unsigned Game::updt()
-  {
-    if(!glfwWindowShouldClose(window))
-    {
-      float delay = secondsPerFrame - (glfwGetTime() - previousTime);
-      if(delay > 0)
-        usleep(delay * 1000000);
-      
-      // Texture upload
-      while(!textureData.empty())
-      {
-        uploadTexture(textureData.front());
-        textureData.pop_front();
-      }
-      
-      resetInput();
-      glfwSwapBuffers(window);
-      glFlush();
-      glClearColor(0.0,0.0,0.0,1.0);
-      glClear(GL_COLOR_BUFFER_BIT);
-      glLoadIdentity();
-      delta = glfwGetTime() - previousTime;
-      previousTime = glfwGetTime();
-      glfwPollEvents();
-      return CONTINUE;
-    }
-    return TERMINATE;
-  }
-  void Game::uploadTexture(std::tuple<unsigned*, int, int, Pair, unsigned char*>
-                           data)
+  void uploadTexture(TextureData data)
   {
     unsigned* textureDataDest = std::get<0>(data);
     int wrap = std::get<1>(data);
     int filter = std::get<2>(data);
     Pair dimensions = std::get<3>(data);
-    unsigned char* buffer = std::get<4>(data);
+    vector<uint8_t>& buffer = std::get<4>(data);
     
     glGenTextures(1, textureDataDest);
     int textureData = *textureDataDest;
@@ -211,67 +186,110 @@ namespace wic
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (GLint) filter);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, (GLint) filter);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, dimensions.x, dimensions.y,
-                 0, GL_RGBA, GL_UNSIGNED_BYTE, buffer);
-    delete[] buffer;
+                 0, GL_RGBA, GL_UNSIGNED_BYTE, buffer.data());
     if(glGetError() == GL_OUT_OF_MEMORY)
     {
       glDeleteTextures(1, textureDataDest);
       throw Error("out of GPU memory");
     }
   }
-  void Game::exit()
+  unsigned updt()
+  {
+    if(!glfwWindowShouldClose(window))
+    {
+      float delay = secondsPerFrame - (glfwGetTime() - previousTime);
+      if(delay > 0)
+        usleep(delay * 1000000);
+      
+      //Texture upload
+      while(!textureData.empty())
+      {
+        queueMutex.lock();
+        uploadTexture(textureData.front());
+        textureData.pop_front();
+        queueMutex.unlock();
+      }
+      
+      resetInput();
+      glfwSwapBuffers(window);
+      glFlush();
+      glClearColor(0.0,0.0,0.0,1.0);
+      glClear(GL_COLOR_BUFFER_BIT);
+      glLoadIdentity();
+      delta = glfwGetTime() - previousTime;
+      previousTime = glfwGetTime();
+      glfwPollEvents();
+      return CONTINUE;
+    }
+    return TERMINATE;
+  }
+  void exit()
   {
     glfwSetWindowShouldClose(window, true);
   }
-  double Game::getDelta() const
+  void cleanUp()
+  {
+    glfwDestroyWindow(window);
+    glfwTerminate();
+    initialized = false;
+  }
+  double getDelta()
   {
     return delta;
   }
-  bool Game::isKeyDown(enum Key key) const
+  bool isKeyDown(enum Key key)
   {
     return downKeys[(int) key];
   }
-  bool Game::isKeyPressed(enum Key key) const
+  bool isKeyPressed(enum Key key)
   {
     return pressedKeys[(int) key];
   }
-  string Game::getInput() const
+  string getInput()
   {
     return input;
   }
-  Pair Game::getCursorLocation() const
+  Pair getCursorLocation()
   {
     Pair result = cursorLocation;
-    result.y = dimensions.y - result.y;
+    result.y = dimensions_.y - result.y;
     return result;
   }
-  Pair Game::getScrollOffset() const
+  Pair getScrollOffset()
   {
     return scrollOffset;
   }
-  double Game::getTime() const
+  double getTime()
   {
     return glfwGetTime();
   }
-  Pair Game::getDimensions() const
+  Pair getWindowDimensions()
   {
-    return dimensions;
+    return dimensions_;
   }
-  Pair Game::getPixelDensity() const
+  Pair getPixelDensity()
   {
     return pixelDensity;
   }
-  void Game::submitTextureDataForUpload(unsigned* textureDataDest, int wrap,
-                                        int filter, Pair dimensions,
-                                        unsigned char* buffer)
+}
+namespace private_wic
+{
+  void submitTexture(unsigned* textureDataDest, int wrap, int filter,
+                     wic::Pair dimensions, vector<uint8_t> buffer)
   {
-    textureData.push_back(std::tuple<unsigned*, int, int, Pair, unsigned char*>
-                          (textureDataDest, wrap, filter, dimensions, buffer));
+    wic::queueMutex.lock();
+    wic::textureData.push_back(wic::TextureData(textureDataDest, wrap, filter,
+                                                dimensions, buffer));
+    wic::queueMutex.unlock();
   }
-  Pair convertLocation(Pair location, Pair dimensions)
+  wic::Pair getOpenGLVertex(wic::Pair location)
   {
-    Pair result = location * Pair(2,2);
-    result = result / dimensions;
-    return result - Pair(1,1);
+    wic::Pair result = location * 2;
+    result /= wic::getWindowDimensions();
+    return result - 1;
+  }
+  FT_Library getFTLibrary()
+  {
+    return wic::FTLibrary;
   }
 }

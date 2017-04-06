@@ -40,7 +40,7 @@ namespace wic
     Quad();
     /** Copy constructor. */
     Quad(const Quad& other);
-    void draw(const Game& game);
+    void draw();
     /** Returns the geometric center. */
     Pair getGeoCenter() const;
     Pair dimensions;      /**< the dimensions */

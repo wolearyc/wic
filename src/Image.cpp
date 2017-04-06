@@ -42,9 +42,9 @@ namespace wic
     Pair diagonal = bounds.upperRight - bounds.lowerLeft;
     return diagonal / 2;
   }
-  void Image::draw(const Game& game)
+  void Image::draw()
   {
-    Pair windowDimensions = game.getDimensions();
+    Pair windowDimensions = getWindowDimensions();
     Pair textureDimensions = texture->getDimensions();
     glBindTexture(GL_TEXTURE_2D, texture->data);
     glColor4ub(color.red, color.green, color.blue,
@@ -57,7 +57,7 @@ namespace wic
     vertex.transform(rotation, scale, center);
     if(drawCentered)
       vertex -= center;
-    vertex = convertLocation(vertex+location, windowDimensions);
+    vertex = private_wic::getOpenGLVertex(vertex+location);
     glTexCoord2f(bounds.lowerLeft.x / textureDimensions.x,
                  bounds.lowerLeft.y / textureDimensions.y);
     glVertex2d(vertex.x, vertex.y);
@@ -66,7 +66,7 @@ namespace wic
     vertex.transform(rotation, scale, center);
     if(drawCentered)
       vertex -= center;
-    vertex = convertLocation(vertex+location, windowDimensions);
+    vertex = private_wic::getOpenGLVertex(vertex+location);
     glTexCoord2f(bounds.upperRight.x / textureDimensions.x,
                  bounds.lowerLeft.y / textureDimensions.y);
     glVertex2d(vertex.x, vertex.y);
@@ -75,7 +75,7 @@ namespace wic
     vertex.transform(rotation, scale, center);
     if(drawCentered)
       vertex -= center;
-    vertex = convertLocation(vertex+location, windowDimensions);
+    vertex = private_wic::getOpenGLVertex(vertex+location);
     glTexCoord2f(bounds.upperRight.x / textureDimensions.x,
                  bounds.upperRight.y / textureDimensions.y);
     glVertex2d(vertex.x, vertex.y);
@@ -84,7 +84,7 @@ namespace wic
     vertex.transform(rotation, scale, center);
     if(drawCentered)
       vertex -= center;
-    vertex = convertLocation(vertex+location, windowDimensions); 
+    vertex = private_wic::getOpenGLVertex(vertex+location);
     glTexCoord2f(bounds.lowerLeft.x / textureDimensions.x,
                  bounds.upperRight.y / textureDimensions.y);
     glVertex2d(vertex.x, vertex.y);

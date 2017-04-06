@@ -39,7 +39,7 @@ namespace wic
   {
     return Pair((int) radius, (int) radius);
   }
-  void Circle::draw(const Game& game)
+  void Circle::draw()
   {
     glColor4ub(color.red, color.green, color.blue, color.alpha);
     glBegin(GL_TRIANGLE_FAN);
@@ -49,7 +49,7 @@ namespace wic
     vertex.transform(rotation, scale, center);
     if(drawCentered)
       vertex -= center;
-    vertex = convertLocation(vertex+location, game.getDimensions());
+    vertex = private_wic::getOpenGLVertex(vertex+location);
     const int numTriangles = 50;
     glVertex2f(vertex.x, vertex.y);
     for(int i = 0; i <= numTriangles; i++)
@@ -59,7 +59,7 @@ namespace wic
       vertex.transform(rotation, scale, center);
       if(drawCentered)
         vertex -= center;
-      vertex = convertLocation(vertex+location, game.getDimensions());
+      vertex = private_wic::getOpenGLVertex(vertex+location);
       glVertex2f(vertex.x, vertex.y);
     }
     glEnd();

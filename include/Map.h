@@ -34,14 +34,14 @@ namespace wic
   public:
     /** Updates actors. This includes handing actions of singular actors and
      *  interactions between actors.
-     *  \param game the game
+
      */
-    virtual void updtActors(const Game& game) = 0;
+    virtual void updtActors() = 0;
     /** Draws actors.
-     *  \param game the game
+
      *  \param camera the camera through which to draw the map
      */
-    virtual void drawActors(const Game& game, const Camera& camera) = 0;
+    virtual void drawActors(const Camera& camera) = 0;
   };
   
   /** Template indicating that a map contains a certain type of actor. This
@@ -51,13 +51,13 @@ namespace wic
   {
   public:
     /** Draws all contained.
-     *  \param game the game
+
      *  \param camera the camera through which to draw the map
      */
-    void drawAll(const Game& game, const Camera& camera)
+    void drawAll(const Camera& camera)
     {
       for(auto actor = actors.begin() ; actor != actors.end(); ++actor)
-        actor->draw(game, camera.getDrawLocation(actor->location),
+        actor->draw(camera.getDrawLocation(actor->location),
                     camera.getDrawRotation(actor->rotation),
                     camera.getDrawScale(Pair(1,1)));
     }
@@ -65,12 +65,12 @@ namespace wic
      *  method handles actions of singular actors, but does not handle 
      *  interactions between actors. As of now, interactions must be handled
      *  manually within Map's updtActors function.
-     *  \param game the game
+
      */
-    void updtAll(const Game& game)
+    void updtAll()
     {
       for(auto actor = actors.begin() ; actor != actors.end(); ++actor)
-        actor->act(game);
+        actor->act();
       
       std::remove_if(actors.begin(), actors.end(),
                      [](const ActorClass& actor)

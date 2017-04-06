@@ -122,9 +122,8 @@ namespace wic
     /** Copy constructor. */
     Drawable(const Drawable& other);
     /** Draws the object on the screen at its location.
-     *  \param game the game
      */
-    virtual void draw(const Game& game) = 0;
+    virtual void draw() = 0;
     /** Gets the geometric center. */
     virtual Pair getGeoCenter() const = 0;
     bool drawCentered; /**< whether or not to draw around some center */

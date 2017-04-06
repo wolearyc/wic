@@ -22,8 +22,8 @@
 #include "Camera.h"
 namespace wic
 {
-  Camera::Camera(Pair location, double rotation, double zoom, const Game& game)
-  : Locateable(location, game.getDimensions() / 2), Rotateable(rotation)
+  Camera::Camera(Pair location, double rotation, double zoom)
+  : Locateable(location, getWindowDimensions() / 2), Rotateable(rotation)
   {
     setZoom(zoom);
   }

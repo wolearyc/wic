@@ -36,9 +36,9 @@ namespace wic
      *  \param location the camera location (map)
      *  \param rotation the rotation (map)
      *  \param zoom the zoom
-     *  \param game the game
+
      */
-    Camera(Pair location, double rotation, double zoom, const Game& game);
+    Camera(Pair location, double rotation, double zoom);
     /** Returns the drawing location of an actor.
      *  \param actorLocation an actor location
      */

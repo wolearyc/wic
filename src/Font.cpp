@@ -21,16 +21,17 @@
 #include "Font.h"
 namespace wic
 {
-  Font::Font(string filepath, unsigned point, bool antialias, const Game& game)
+  Font::Font(string filepath, unsigned point, bool antialias)
   : point(point), antialias(antialias)
   {
     if(point == 0)
       throw InvalidArgument("point", "zero");
-    int error = FT_New_Face(game.FTLibrary, filepath.data(), 0, &face);
+    int error = FT_New_Face(private_wic::getFTLibrary(), filepath.data(), 0,
+                            &face);
     if(error != 0)
       throw InvalidFile(filepath);
     
-    Pair pixelDensity = game.getPixelDensity();
+    Pair pixelDensity = getPixelDensity();
     FT_Set_Char_Size(face, 0, point*64, pixelDensity.x, pixelDensity.y);
     for(unsigned char c = 0; c < NUM_CHARS; c++)
     {
@@ -45,8 +46,11 @@ namespace wic
            face->glyph->bitmap.buffer != 0)
         {
           Pair dimensions(face->glyph->bitmap.width, face->glyph->bitmap.rows);
-          textures[c] = Texture(face->glyph->bitmap.buffer, dimensions,
-                                Format::Grayscale, Filter::Nearest, Wrap::Stop);
+          int bufferSize = (int) (dimensions.x + dimensions.y);
+          vector<uint8_t> buffer(face->glyph->bitmap.buffer,
+                                 face->glyph->bitmap.buffer + bufferSize);
+          textures[c] = Texture(buffer, dimensions, Format::Grayscale,
+                                Filter::Nearest, Wrap::Stop);
         }
       }
       else
@@ -56,13 +60,15 @@ namespace wic
         {
           FT_Bitmap target;
           FT_Bitmap_New(&target);
-          int error = FT_Bitmap_Convert(game.FTLibrary,
+          int error = FT_Bitmap_Convert(private_wic::getFTLibrary(),
                                         &face->glyph->bitmap,
                                         &target, 1);
           Pair dimensions(target.width, target.rows);
-          textures[c] = Texture(target.buffer, dimensions, Format::Mono,
+          int bufferSize = (int) (dimensions.x + dimensions.y);
+          vector<uint8_t> buffer(target.buffer, target.buffer + bufferSize);
+          textures[c] = Texture(buffer, dimensions, Format::Mono,
                                 Filter::Nearest, Wrap::Stop);
-          FT_Bitmap_Done(game.FTLibrary, &target);
+          FT_Bitmap_Done(private_wic::getFTLibrary(), &target);
         }
       }
     }

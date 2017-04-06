@@ -46,7 +46,7 @@ namespace wic
     /** Copy constructor. */
     Text(const Text& other);
     ~Text();
-    void draw(const Game& game);
+    void draw();
     Bounds getWholeBounds();
     /** Sets the string to render and sets the bounds to display the entire
      *  string.
