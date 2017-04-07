@@ -107,7 +107,7 @@ namespace wic
     Bounded(const Bounded& other);
     Bounds bounds; /**< the bounds. */
     /** Returns the whole bounds */
-    virtual Bounds getWholeBounds() = 0;
+    virtual Bounds getWholeBounds() const = 0;
   };
   /** An object that can be drawn to the screen. */
   class Drawable
@@ -121,8 +121,7 @@ namespace wic
     Drawable();
     /** Copy constructor. */
     Drawable(const Drawable& other);
-    /** Draws the object on the screen at its location.
-     */
+    /** Draws the object on the screen at its location. */
     virtual void draw() = 0;
     /** Gets the geometric center. */
     virtual Pair getGeoCenter() const = 0;

@@ -30,9 +30,10 @@ namespace wic
   public:
     /** Constructor (starts server).
      *  \param name server's name; limited to 20 characters
-     *  \param port port number on which to listen for packets; must be >1024
+     *  \param port port number on which to listen for packets; must be > 1024
      *  \param maxClients maximum simultaneously connected clients; must be
      *         in the range 1-254
+     *  \exception Failure "port already in use"
      */
     Server(string name, unsigned port, uint8_t maxClients);
     ~Server();
@@ -75,9 +76,13 @@ namespace wic
     void ban(string nameOrIP);
     /** Unbans a name or IP address.
      *  \param nameOrIP a name or IP address
+     *  \exception Error "nameOrIP is not banned"
      */
     void unban(string nameOrIP);
-    /** Returns the ID of the client with a name or IP address */
+    /** Returns the ID of the client with a name or IP address 
+     *  param nameOrIP a name or IP address
+     *  \exception Error "nameOrIP is not banned"
+     */
     NodeID getNodeID(string nameOrIP) const;
   private:
     vector<string> ips;

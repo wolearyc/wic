@@ -66,8 +66,9 @@ namespace wic
   private:
     string name;
   };
-  /** A nonfatal failure. Failures are present by design. An example might be
-   *  a client join failure due to a preexisting ban. 
+  /** A nonfatal failure. Failures are present by design, so users will most 
+   *  likely catch Failures, as they are not a result of programmer or internal
+   *  error. An example might be a client join failure due to a preexisting ban. 
    */
   class Failure : public Error
   {

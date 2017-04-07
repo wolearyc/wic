@@ -47,7 +47,8 @@ namespace wic
     Text(const Text& other);
     ~Text();
     void draw();
-    Bounds getWholeBounds();
+    Pair getGeoCenter() const;
+    Bounds getWholeBounds() const;
     /** Sets the string to render and sets the bounds to display the entire
      *  string.
      *  \param str the new string to render

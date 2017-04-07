@@ -66,6 +66,7 @@ namespace wic
   {
     private_wic::submitTexture(&data, (int) wrap, (int) filter,
                                dimensions, formattedBuffer);
+    loaded = true;
   }
   Pair Texture::getDimensions() const
   {
@@ -78,6 +79,15 @@ namespace wic
       throw InvalidArgument("dimensions.x", "zero");
     if(dimensions.y < 1)
       throw InvalidArgument("dimensions.y", "zero");
+    if((format == Format::Mono || format == Format::Grayscale) &&
+       (int) (dimensions.x * dimensions.y) != buffer.size())
+      throw InvalidArgument("dimensions", "incompatible with buffer");
+    else if(format == Format::RGB &&
+       (int) (dimensions.x * dimensions.y * 3) != buffer.size())
+      throw InvalidArgument("dimensions", "incompatible with buffer");
+    else if(format == Format::RGBA &&
+            (int) (dimensions.x * dimensions.y * 4) != buffer.size())
+      throw InvalidArgument("dimensions", "incompatible with buffer");
     
     this->dimensions = dimensions;
     this->filter = filter;
@@ -85,7 +95,6 @@ namespace wic
     
     int xDimension = (int) (dimensions.x) * 4;
     int yDimension = (int) dimensions.y;
-    
     vector<vector<uint8_t>> temp(xDimension, vector<uint8_t>(yDimension));
     for(int y = 0; y < yDimension; y++)
     {

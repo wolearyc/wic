@@ -38,7 +38,7 @@
 #include "Texture.h"
 #include "Actor.h"
 #include "Camera.h"
-#include "Map.h"
+#include "Stage.h"
 #include "LoadingScreen.h"
 #include "Circle.h"
 #endif

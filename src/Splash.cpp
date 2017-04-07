@@ -22,15 +22,15 @@
 #include "Splash.h"
 namespace wic
 {
-  void drawSplash(Color backgroundColor, Color textColor)
+  void drawSplash(Color textColor)
   {
+    Color backgroundColor = Color::Black;
     backgroundColor.alpha = 0;
     textColor.alpha = 0;
     
     Quad background(Pair(), getWindowDimensions(), backgroundColor);
 
-    double min_dim = fmin(getWindowDimensions().x, getWindowDimensions().y);
-    Pair scaleMultiplier = Pair(min_dim, min_dim) / Pair(500,500);
+    Pair scaleMultiplier = Pair(2,2);
     
     vector<uint8_t> wicBuffer =
     {
@@ -43,10 +43,13 @@ namespace wic
     Texture wicTexture(wicBuffer, Pair(12,5), Format::Mono, Filter::Nearest,
                        Wrap::Repeat);
     wicTexture.load();
-    Pair location = getWindowDimensions() / 2;
-    Image wic(location, &wicTexture);
+    Pair location;
+    Image wic(Pair(), &wicTexture);
     wic.scale = Pair(10,10) * scaleMultiplier;
-    wic.center = wic.getGeoCenter();
+    wic.center.x = wic.getGeoCenter().x * 2;
+    wic.location = getWindowDimensions() / 2;
+    wic.location.x += wic.scale.x * wic.getGeoCenter().x;
+    wic.location.y -= wic.scale.y * wic.getGeoCenter().y;
     wic.drawCentered = true;
     wic.color = textColor;
     
@@ -61,34 +64,28 @@ namespace wic
     Texture engineTexture(engineBuffer, Pair(23,5),Format::Mono, Filter::Nearest,
                           Wrap::Repeat);
     engineTexture.load();
-    location.x += wic.scale.x * wicTexture.getDimensions().x / 2;
-    location.y -= wic.scale.y * (wicTexture.getDimensions().y / 2 + 1);
-    location = Pair((int) location.x, (int) location.y);
-    Image engine(location, &engineTexture);
+    Image engine(Pair(), &engineTexture);
     engine.scale = Pair(2,2) * scaleMultiplier;
-    engine.center = engine.getGeoCenter();
-    engine.center.x *= 2;
+    engine.center.x = engine.getGeoCenter().x * 2;
+    engine.location = wic.location - Pair(0, 25);
     engine.drawCentered = true;
     engine.color = textColor;
     
     vector<uint8_t> versionBuffer =
     {
-      0,0,0,1,1,0,0,1,1,
-      0,0,0,0,1,0,0,0,1,
-      0,0,0,0,1,0,0,0,1,
-      1,0,1,0,1,0,0,0,1,
-      0,1,0,0,1,0,1,0,1,
+      0,0,0,0,1,1,0,0,0,1,1,1,
+      0,0,0,0,0,1,0,0,0,1,0,1,
+      0,1,0,1,0,1,0,0,0,1,0,1,
+      1,0,1,0,0,1,0,0,0,1,0,1,
+      0,1,0,1,0,1,0,1,0,1,1,1,
     };
-    Texture versionTexture(versionBuffer, Pair(9,5), Format::Mono,
+    Texture versionTexture(versionBuffer, Pair(12,5), Format::Mono,
                            Filter::Nearest, Wrap::Repeat);
     versionTexture.load();
-    location.y -= engine.scale.y * (engineTexture.getDimensions().y / 2 + 1);
-    location.y = (int) location.y;
     Image version(location, &versionTexture);
-    version.scale = Pair(1.5,1.5) * scaleMultiplier;
-    version.center = version.getGeoCenter();
-    version.center.x *= 2;
-    version.center.y *= 2;
+    version.scale = Pair(1,1) * scaleMultiplier;
+    version.center.x = version.getGeoCenter().x * 2;
+    version.location = engine.location - Pair(0, 12);
     version.drawCentered = true;
     version.color = textColor;
     

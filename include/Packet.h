@@ -33,7 +33,7 @@ namespace wic
   class AbstractPacket
   {
   public:
-    const static size_t HEADER_SIZE; /**< Size of the packet's header */
+    const static size_t HEADER_SIZE;
     /** Default constructor. */
     AbstractPacket();
     /** Returns the data payload. */

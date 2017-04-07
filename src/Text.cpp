@@ -119,8 +119,12 @@ namespace wic
     }
     wholeBounds = Bounds(Pair(0.0, minY / 64), Pair(x, maxY / 64));
   }
-  Bounds Text::getWholeBounds()
+  Bounds Text::getWholeBounds() const
   {
     return wholeBounds;
+  }
+  Pair Text::getGeoCenter() const
+  {
+    return getWholeBounds().upperRight / 2;
   }
 }

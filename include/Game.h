@@ -181,7 +181,9 @@ namespace wic
   void openWindow(string title, Pair dimensions, unsigned fps, bool resizeable,
                   bool fullscreen, unsigned samples);
   /** Advances to the next frame. This function will wait a certain amount of
-   *  time before returning, ensuring that the fps is maintained.
+   *  time before returning, ensuring that the fps is maintained. This function
+   *  performs several system tasks, such as uploading loaded textures to the 
+   *  GPU.
    *  \return TERMINATE if the window has been closed and the program should
    *          exit. CONTINUE otherwise.
    */

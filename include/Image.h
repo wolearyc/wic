@@ -40,10 +40,9 @@ namespace wic
     Image();
     /** Copy constructor. */
     Image(const Image& other);
-    /** Returns the geometric center. */
     Pair getGeoCenter() const;
     void draw();
-    Bounds getWholeBounds();
+    Bounds getWholeBounds() const;
     const Texture* texture;     /**< the texture */
   };
 }

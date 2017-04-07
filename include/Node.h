@@ -46,7 +46,8 @@ namespace wic
   public:
     /** Constructor (binds socket to port).
      *  \param name name of the node; limited to 20 characters
-     *  \param socketPort the port on which to bind the socket
+     *  \param socketPort the port on which to bind the socket; must be > 1025
+     *  \exception Failure "port already in use"
      */
     Node(string name, unsigned socketPort);
     /** Constructor (binds socket to any port).

@@ -24,7 +24,7 @@
 #include "Interfaces.h"
 namespace wic
 {
-  /** Specifies how a map is rendered. Like a real camera, Camera can move, 
+  /** Specifies how a Stage is rendered. Like a real camera, Camera can move,
    *  rotate, and zoom in. A zoom of 1 indicates no zoom, while zoom > 1 and
    *  zoom < 1 indicates zooming in and out respectively.
    */
@@ -33,10 +33,9 @@ namespace wic
   {
   public:
     /** Constructor.
-     *  \param location the camera location (map)
-     *  \param rotation the rotation (map)
-     *  \param zoom the zoom
-
+     *  \param location the location
+     *  \param rotation the rotation
+     *  \param zoom the zoom; must be > 0
      */
     Camera(Pair location, double rotation, double zoom);
     /** Returns the drawing location of an actor.
@@ -54,7 +53,7 @@ namespace wic
     /** Returns the current zoom. */
     double getZoom() const;
     /** Sets the zoom. 
-     *  \param zoom the zoom
+     *  \param zoom the zoom; must be > 0
      */
     void setZoom(double zoom);
   private:

@@ -27,10 +27,18 @@ namespace wic
   {
     setZoom(zoom);
   }
-  Pair Camera::getDrawLocation(Pair mapLocation) const
+  Pair Camera::getDrawLocation(Pair actorLocation) const
   {
-    mapLocation.transform(-rotation, Pair(1,1) * zoom, location);
-    return mapLocation - location + center;
+    actorLocation.transform(-rotation, Pair(1,1) * zoom, location);
+    return actorLocation - location + center;
+  }
+  double Camera::getDrawRotation(double actorRotation) const
+  {
+    return actorRotation - rotation + M_PI/2;
+  }
+  Pair Camera::getDrawScale(Pair actorScale) const
+  {
+    return actorScale * zoom;
   }
   double Camera::getZoom() const
   {
@@ -41,13 +49,5 @@ namespace wic
     if(zoom <= 0)
       throw InvalidArgument("zoom", "<= 0");
     this->zoom = zoom;
-  }
-  double Camera::getDrawRotation(double mapRotation) const
-  {
-    return mapRotation - rotation + 3.14/2;
-  }
-  Pair Camera::getDrawScale(Pair mapScale) const
-  {
-    return mapScale * Pair(zoom, zoom);
   }
 }

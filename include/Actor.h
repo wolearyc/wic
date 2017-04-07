@@ -26,37 +26,43 @@
 namespace wic
 {
   /** 2D game actor. An actor possesses a location and rotation within the game, 
-   *  and is almost always held within a Map. An actor's behavior is defined
-   *  through its act method. 
+   *  and is almost always held within a stage. An actor's behavior is defined
+   *  through its act method. Additionally, actors can remove themselves 
+   *  from the stage.
    */
   class Actor
-  : public Locateable, public Rotateable
+  : public Locateable, public Rotateable, public Scaleable
   {
   public:
     /** Default constructor. */
     Actor();
-    /** Draws actor's sprite. Implemented in subclasses.
+    /** Draws the sprite on the screen.
      *  \param spriteLocation a specified location
      *  \param spriteRocation a specified rotation
      *  \param spriteScale a specified scale
      */
     virtual void draw(Pair spriteLocation, double spriteRotation,
                       Pair spriteScale) = 0;
-    /** Defines the actors behavior. Implemented in subclasses. */
+    /** Defines independent behavior. */
     virtual void act() = 0;
-    /** Marks the actor for removal from the map. */
+    /** Marks actor for removal from the Stage. */
     void markForRemoval();
-    /** Returns whether or not to remove from the map */
+    /** Returns whether or not the actor is marked for removal. */
     bool shouldRemove() const;
   private:
     bool remove;
   };
   
-  /** Implemented by actors that interact, or act on, another actor. */
+  /** Implemented by actors that act on i.e. interact with another actor. 
+   *  The convention is that actors do not reciprocally act on one another. 
+   *  Instead, both actors are updated in a single actor's actOn method. This 
+   *  keeps the code simple and maintainable.
+   *  \tparam ActorClass actor to act on
+   */
   template <class ActorClass> class ActsOn
   {
   public:
-    /** Defines the actor's interaction with another actor.
+    /** Defines interaction with another actor.
      *  \param other another actor.
      */
     virtual void actOn(ActorClass& other) = 0;

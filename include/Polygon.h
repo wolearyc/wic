@@ -43,7 +43,6 @@ namespace wic
     /** Copy constructor. */
     Polygon(const Polygon& other);
     void draw();
-    /** Returns the geometric center. */
     Pair getGeoCenter() const;
     /** Sets new vertices.
      *  \param vertices the new vertices in drawing order; must contain >2 

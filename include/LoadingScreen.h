@@ -30,17 +30,14 @@ namespace wic
   class LoadingScreen
   {
   public:
-    /** Constructor.
-
-     */
+    /** Constructor. */
     LoadingScreen();
-    /** Displays the loading screen. This function returns with the progress is
+    /** Displays the loading screen. This function returns when the progress is
      *  set to 100%. 
-
      */
     void display();
-    /** Safely sets the progress (can be called by any thread).
-     *  \param progress the progress percentage
+    /** Safely sets the progress (from any thread).
+     *  \param progress the progress percentage; must be <= 100
      */
     void setProgress(unsigned progress);
   private:

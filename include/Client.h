@@ -34,6 +34,10 @@ namespace wic
      *  \param serverPort the server port number; must be > 1024
      *  \param serverIP the server IP address
      *  \param timeout the time, in seconds, to wait for server response
+     *  \exception Failure "port already in use"
+     *  \exception Failure "server full"
+     *  \exception Failure "banned"
+     *  \exception Failure "timeout"
      */
     Client(string name, unsigned serverPort, string serverIP, double timeout);
     ~Client();

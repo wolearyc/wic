@@ -23,7 +23,7 @@
 namespace wic
 {
   Actor::Actor()
-  : remove(false)
+  : Locateable(), Rotateable(), Scaleable(), remove(false)
   {
   }
   void Actor::markForRemoval()

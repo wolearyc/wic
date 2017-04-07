@@ -30,10 +30,9 @@
 namespace wic
 {
   /** Displays the wic splash animation.
-   *  \param backgroundColor the desired background color (try Color::WicGray)
    *  \param textColor the desired text color (try Color::WicOrange)
    *  \param game the game
    */
-  void drawSplash(Color backgroundColor, Color textColor);
+  void drawSplash(Color textColor);
 }
 #endif

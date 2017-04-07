@@ -41,7 +41,6 @@ namespace wic
     /** Copy constructor. */
     Circle(const Circle& other);
     void draw();
-    /** Returns the geometric center. */
     Pair getGeoCenter() const;
     unsigned radius;      /**< the radius */
   };

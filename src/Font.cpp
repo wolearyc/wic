@@ -51,6 +51,7 @@ namespace wic
                                  face->glyph->bitmap.buffer + bufferSize);
           textures[c] = Texture(buffer, dimensions, Format::Grayscale,
                                 Filter::Nearest, Wrap::Stop);
+          textures[c].load();
         }
       }
       else
@@ -68,6 +69,7 @@ namespace wic
           vector<uint8_t> buffer(target.buffer, target.buffer + bufferSize);
           textures[c] = Texture(buffer, dimensions, Format::Mono,
                                 Filter::Nearest, Wrap::Stop);
+          textures[c].load();
           FT_Bitmap_Done(private_wic::getFTLibrary(), &target);
         }
       }

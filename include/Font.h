@@ -41,8 +41,8 @@ namespace wic
      *         CFF, OpenType, OpenType collection, SFNT-based bitmap, X11 PCF,
      *         Windows FNT, BDF, or PFR font file
      * \param point the point of the font; must be nonzero
-     * \param antialias whether or not to antialias the font. Small, antialiased
-     *        fonts ca be difficult to read
+     * \param antialias whether or not to antialias. Small, antialiased fonts
+     *        can be difficult to read.
      */
     Font(string filepath, unsigned point, bool antialias);
     /** Default constructor */

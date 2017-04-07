@@ -61,9 +61,10 @@ namespace wic
   public:
     /** Constructur (from buffer).
      *  \param buffer a buffer
-     *  \param dimensions the buffer dimensions
+     *  \param dimensions the dimensions; must be compatible with buffer and
+     *         format
      *  \param format the buffer format
-     *  \param filter the desired texture filter
+     *  \param filter the texture filter
      *  \param wrap the texture wrapping
      */
     Texture(vector<uint8_t> buffer, Pair dimensions, enum Format format,
@@ -72,11 +73,11 @@ namespace wic
      *  \param filepath an absolute or relative filepath to a non-1bpp and 
      *         non-RLE, BMP, non-interlaced PNG, JPEG, TGA, DDS, PSD, or HDR file
      *  \param filter the texture filter
-     *  \param wrap the texture wrap
+     *  \param wrap the texture wrapping
      */
     Texture(string filepath, enum Filter filter, enum Wrap wrap);
     /** Constructor (image file, nearest filter and repeat wrapping)
-     *  \param filepatha n absolute or relative filepath to a non-1bpp and
+     *  \param filepath an absolute or relative filepath to a non-1bpp and
      *         non-RLE, BMP, non-interlaced PNG, JPEG, TGA, DDS, PSD, or HDR file
      */
     Texture(string filepath);
@@ -85,7 +86,7 @@ namespace wic
     /** Default constructor. */
     Texture();
     ~Texture();
-    /** Loads the texture, enabling drawing. */
+    /** Loads the texture into the GPU, enabling drawing. */
     void load();
     /** Returns the dimensions. */
     Pair getDimensions() const;

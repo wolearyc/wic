@@ -15,12 +15,12 @@
  * You should have received a copy of the GNU General Public License along with
  * this program.  If not, see <http://www.gnu.org/licenses/>.
  * ----------------------------------------------------------------------------
- * File:    Map.h
+ * File:    Stage.h
  * ----------------------------------------------------------------------------
  */
 /** \file */
-#ifndef MAP_H
-#define MAP_H
+#ifndef STAGE_H
+#define STAGE_H
 #include <vector>
 #include "Interfaces.h"
 #include "Camera.h"
@@ -29,43 +29,37 @@ using std::vector;
 namespace wic
 {
   /** An environment shared by actors. */
-  class Map
+  class Stage
   {
   public:
     /** Updates actors. This includes handing actions of singular actors and
      *  interactions between actors.
-
      */
     virtual void updtActors() = 0;
     /** Draws actors.
-
-     *  \param camera the camera through which to draw the map
+     *  \param camera the camera through which to view
      */
     virtual void drawActors(const Camera& camera) = 0;
   };
   
-  /** Template indicating that a map contains a certain type of actor. This
-   *  template is defined to reduce the amount of code required. 
+  /** Indicates that a Stage can contain actors of a certain type. 
+   *  \tparam ActorClass an actor class
    */
   template <class ActorClass> class Contains
   {
   public:
-    /** Draws all contained.
-
-     *  \param camera the camera through which to draw the map
+    /** Draws all the actors.
+     *  \param camera the camera through which to view
      */
     void drawAll(const Camera& camera)
     {
       for(auto actor = actors.begin() ; actor != actors.end(); ++actor)
         actor->draw(camera.getDrawLocation(actor->location),
                     camera.getDrawRotation(actor->rotation),
-                    camera.getDrawScale(Pair(1,1)));
+                    camera.getDrawScale(actor->scale));
     }
-    /** Updates actors and removes those marked for removal. This helpful 
-     *  method handles actions of singular actors, but does not handle 
-     *  interactions between actors. As of now, interactions must be handled
-     *  manually within Map's updtActors function.
-
+    /** Updates actors and removes those marked for removal. This method 
+     *  handles individual actions. 
      */
     void updtAll()
     {
