@@ -53,6 +53,7 @@ namespace wic
     vector<Pair> getVertices() const;
   protected:
     vector<Pair> vertices;
+    vector<double> openGLVertices;
   };
 }
 #endif

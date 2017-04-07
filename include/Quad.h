@@ -24,7 +24,7 @@
 #include "Polygon.h"
 namespace wic
 {
-  /** A filled rectangle. */
+  /** A rectangle. */
   class Quad
   : public Locateable, public Rotateable, public Scaleable, public Colorable,
     public Drawable

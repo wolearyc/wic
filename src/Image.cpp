@@ -21,6 +21,10 @@
 #include "Image.h"
 namespace wic
 {
+  // Utility buffers.
+  static double vertices[8] = {0};
+  static double textureVertices[8] = {0};
+
   Image::Image(Pair location, const Texture* texture)
   : Locateable(location), Rotateable(), Scaleable(), Colorable(),
     Drawable(), Bounded(Bounds(Pair(), texture->getDimensions())),
@@ -44,52 +48,56 @@ namespace wic
   }
   void Image::draw()
   {
-    Pair windowDimensions = getWindowDimensions();
     Pair textureDimensions = texture->getDimensions();
-    glBindTexture(GL_TEXTURE_2D, texture->data);
-    glColor4ub(color.red, color.green, color.blue,
-               color.alpha);
-    glEnable(GL_TEXTURE_2D);
-    glBegin(GL_QUADS);
-    
-    /* lower left corner */
-    Pair vertex(0,0);
+    // Lower left corner.
+    Pair vertex;
     vertex.transform(rotation, scale, center);
     if(drawCentered)
       vertex -= center;
     vertex = private_wic::getOpenGLVertex(vertex+location);
-    glTexCoord2f(bounds.lowerLeft.x / textureDimensions.x,
-                 bounds.lowerLeft.y / textureDimensions.y);
-    glVertex2d(vertex.x, vertex.y);
-    /* lower right corner */
+    vertices[0] = vertex.x;
+    vertices[1] = vertex.y;
+    textureVertices[0] = bounds.lowerLeft.x / textureDimensions.x;
+    textureVertices[1] = bounds.lowerLeft.y / textureDimensions.y;
+    // Lower right corner.
     vertex = Pair(bounds.upperRight.x - bounds.lowerLeft.x, 0.0);
     vertex.transform(rotation, scale, center);
     if(drawCentered)
       vertex -= center;
     vertex = private_wic::getOpenGLVertex(vertex+location);
-    glTexCoord2f(bounds.upperRight.x / textureDimensions.x,
-                 bounds.lowerLeft.y / textureDimensions.y);
-    glVertex2d(vertex.x, vertex.y);
-    /* upper right corner */
-    vertex = bounds.upperRight-bounds.lowerLeft;
-    vertex.transform(rotation, scale, center);
-    if(drawCentered)
-      vertex -= center;
-    vertex = private_wic::getOpenGLVertex(vertex+location);
-    glTexCoord2f(bounds.upperRight.x / textureDimensions.x,
-                 bounds.upperRight.y / textureDimensions.y);
-    glVertex2d(vertex.x, vertex.y);
-    /* upper left corner */
+    vertices[2] = vertex.x;
+    vertices[3] = vertex.y;
+    textureVertices[2] = bounds.upperRight.x / textureDimensions.x;
+    textureVertices[3] = bounds.lowerLeft.y / textureDimensions.y;
+    // Upper left corner/
     vertex = Pair(0.0, bounds.upperRight.y - bounds.lowerLeft.y);
     vertex.transform(rotation, scale, center);
     if(drawCentered)
       vertex -= center;
     vertex = private_wic::getOpenGLVertex(vertex+location);
-    glTexCoord2f(bounds.lowerLeft.x / textureDimensions.x,
-                 bounds.upperRight.y / textureDimensions.y);
-    glVertex2d(vertex.x, vertex.y);
+    vertices[4] = vertex.x;
+    vertices[5] = vertex.y;
+    textureVertices[4] = bounds.lowerLeft.x / textureDimensions.x;
+    textureVertices[5] = bounds.upperRight.y / textureDimensions.y;
+    // Upper right corner.
+    vertex = bounds.upperRight-bounds.lowerLeft;
+    vertex.transform(rotation, scale, center);
+    if(drawCentered)
+      vertex -= center;
+    vertex = private_wic::getOpenGLVertex(vertex+location);
+    vertices[6] = vertex.x;
+    vertices[7] = vertex.y;
+    textureVertices[6] = bounds.upperRight.x / textureDimensions.x;
+    textureVertices[7] = bounds.upperRight.y / textureDimensions.y;
     
-    glEnd();
+    glEnable(GL_TEXTURE_2D);
+    glEnableClientState(GL_VERTEX_ARRAY);
+    glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+    glTexCoordPointer(2, GL_DOUBLE, 0, textureVertices);
+    glVertexPointer(2, GL_DOUBLE, 0, vertices);
+    glBindTexture(GL_TEXTURE_2D, texture->data);
+    glColor4ub(color.red, color.green, color.blue, color.alpha);
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
     glDisable(GL_TEXTURE_2D);
   }
   Bounds Image::getWholeBounds() const

@@ -21,7 +21,7 @@
 #include "Quad.h"
 namespace wic
 {
-  static Pair vertices[4] = {Pair()}; /* utility buffer for vertices */
+  static double vertices[8] = {0}; /* utility buffer for vertices */
   Quad::Quad(Pair location, Pair dimensions, Color color)
   : Locateable(location), Rotateable(), Scaleable(), Colorable(color),
     Drawable(), dimensions(dimensions)
@@ -43,20 +43,42 @@ namespace wic
   void Quad::draw()
   {
     glColor4ub(color.red, color.green, color.blue, color.alpha);
-    vertices[1].x = dimensions.x;
-    vertices[2] = dimensions;
-    vertices[3].y = dimensions.y;
-    glBegin(GL_QUADS);
-    for(unsigned i = 0; i < 4; i++)
-    {
-      Pair vertex = vertices[i];
-      vertex.transform(rotation, scale, center);
-      if(drawCentered)
-        vertex -= center;
-      vertex = private_wic::getOpenGLVertex(vertex+location);
-      glVertex2d(vertex.x, vertex.y);
-    }
-    glEnd();
+    
+    Pair vertex;
+    vertex.transform(rotation, scale, center);
+    if(drawCentered)
+      vertex -= center;
+    vertex = private_wic::getOpenGLVertex(vertex+location);
+    vertices[0] = vertex.x;
+    vertices[1] = vertex.y;
+    
+    vertex = Pair(dimensions.x, 0.0);
+    vertex.transform(rotation, scale, center);
+    if(drawCentered)
+      vertex -= center;
+    vertex = private_wic::getOpenGLVertex(vertex+location);
+    vertices[2] = vertex.x;
+    vertices[3] = vertex.y;
+    
+    vertex = Pair(0.0, dimensions.y);
+    vertex.transform(rotation, scale, center);
+    if(drawCentered)
+      vertex -= center;
+    vertex = private_wic::getOpenGLVertex(vertex+location);
+    vertices[4] = vertex.x;
+    vertices[5] = vertex.y;
+    
+    vertex = dimensions;
+    vertex.transform(rotation, scale, center);
+    if(drawCentered)
+      vertex -= center;
+    vertex = private_wic::getOpenGLVertex(vertex+location);
+    vertices[6] = vertex.x;
+    vertices[7] = vertex.y;
+    
+    glEnableClientState(GL_VERTEX_ARRAY);
+    glVertexPointer(2, GL_DOUBLE, 0, vertices);
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
   }
 }
 

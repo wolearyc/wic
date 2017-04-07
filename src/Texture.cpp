@@ -43,7 +43,7 @@ namespace wic
     SOIL_free_image_data(buffer);
   }
   Texture::Texture(string filepath)
-  : Texture(filepath, Filter::Nearest, Wrap::Repeat)
+  : Texture(filepath, Filter::Nearest, Wrap::None)
   {
   }
   Texture::Texture(const Texture& other)
@@ -54,7 +54,7 @@ namespace wic
   }
   Texture::Texture()
   : data(0), dimensions(Pair()), loaded(false), filter(Filter::Nearest),
-    wrap(Wrap::Repeat)
+    wrap(Wrap::None)
   {
   }
   Texture::~Texture()

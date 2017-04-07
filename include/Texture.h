@@ -52,7 +52,7 @@ namespace wic
   {
     Repeat = GL_REPEAT,               /**< Repeat texture. */
     ClampToEdge = GL_CLAMP_TO_EDGE,   /**< Smear edge pixels. */
-    Stop = GL_CLAMP_TO_BORDER,        /**< Draw nothing. */
+    None = GL_CLAMP_TO_BORDER,        /**< Draw nothing. */
   };
   /** A texture. */
   class Texture
@@ -76,7 +76,7 @@ namespace wic
      *  \param wrap the texture wrapping
      */
     Texture(string filepath, enum Filter filter, enum Wrap wrap);
-    /** Constructor (image file, nearest filter and repeat wrapping)
+    /** Constructor (image file, nearest filter and no wrapping)
      *  \param filepath an absolute or relative filepath to a non-1bpp and
      *         non-RLE, BMP, non-interlaced PNG, JPEG, TGA, DDS, PSD, or HDR file
      */

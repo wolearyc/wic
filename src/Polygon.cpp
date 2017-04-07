@@ -40,32 +40,39 @@ namespace wic
   {
     if(vertices.size() < 3)
       throw InvalidArgument("vertices length", "< 3");
+    
     this->vertices = vertices;
+    openGLVertices.resize(vertices.size() * 2);
   }
-  vector<Pair> Polygon::getVertices() const { return vertices; };
+  vector<Pair> Polygon::getVertices() const
+  {
+    return vertices;
+  };
   Pair Polygon::getGeoCenter() const
   {
     Pair result = Pair();
-    for(unsigned i = 0; i < vertices.size(); i++)
+    for(unsigned i = 0; i < vertices.size(); i+=2)
       result += vertices[i];
     result /= vertices.size();
     return result;
   }
   void Polygon::draw()
   {
-    double cosine = cos(rotation);
-    double sine = sin(rotation);
     glColor4ub(color.red, color.green, color.blue, color.alpha);
-    glBegin(GL_POLYGON);
-    for(unsigned i = 0; i < vertices.size(); i++)
+    for(unsigned i = 0; i < openGLVertices.size(); i+=2)
     {
-      Pair vertex = vertices[i];
+      Pair vertex = vertices[i/2];
       vertex.transform(rotation, scale, center);
       if(drawCentered)
         vertex -= center;
       vertex = private_wic::getOpenGLVertex(vertex+location);
-      glVertex2d(vertex.x, vertex.y);
+      openGLVertices[i] = vertex.x;
+      openGLVertices[i+1] = vertex.y;
     }
-    glEnd();
+    
+    glEnableClientState(GL_VERTEX_ARRAY);
+    glVertexPointer(2, GL_DOUBLE, 0, openGLVertices.data());
+    glDrawArrays(GL_TRIANGLES, 0, openGLVertices.size());
+    glDisableClientState(GL_VERTEX_ARRAY);
   }
 }
