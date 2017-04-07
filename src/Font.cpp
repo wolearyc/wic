@@ -45,7 +45,8 @@ namespace wic
         if(!FT_Render_Glyph(face->glyph, FT_RENDER_MODE_NORMAL) &&
            face->glyph->bitmap.buffer != 0)
         {
-          Pair dimensions(face->glyph->bitmap.width, face->glyph->bitmap.rows);
+          Pair dimensions((int) face->glyph->bitmap.width,
+                          (int) face->glyph->bitmap.rows);
           int bufferSize = (int) (dimensions.x + dimensions.y);
           vector<uint8_t> buffer(face->glyph->bitmap.buffer,
                                  face->glyph->bitmap.buffer + bufferSize);
@@ -64,7 +65,7 @@ namespace wic
           int error = FT_Bitmap_Convert(private_wic::getFTLibrary(),
                                         &face->glyph->bitmap,
                                         &target, 1);
-          Pair dimensions(target.width, target.rows);
+          Pair dimensions((int) target.width, (int) target.rows);
           int bufferSize = (int) (dimensions.x + dimensions.y);
           vector<uint8_t> buffer(target.buffer, target.buffer + bufferSize);
           textures[c] = Texture(buffer, dimensions, Format::Mono,

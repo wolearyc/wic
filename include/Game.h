@@ -27,7 +27,7 @@
 #include <mutex>
 #include <vector>
 #include "GLFW/glfw3.h"
-#include "FreeType/ft2build.h"
+#include "ft2build.h"
 #include FT_FREETYPE_H
 #include "Pair.h"
 #include "Error.h"

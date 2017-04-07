@@ -21,7 +21,7 @@
 /** \file */
 #ifndef FONT_H
 #define FONT_H
-#include "FreeType/ft2build.h"
+#include "ft2build.h"
 #include FT_FREETYPE_H
 #include FT_BITMAP_H
 #include "Game.h"
