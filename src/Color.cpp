@@ -38,7 +38,7 @@ namespace wic
   const Color Color::Navy      = Color(0,0,128);
   const Color Color::Fuchsia   = Color(255,0,255);
   const Color Color::Purple    = Color(128,0,128);
-  const Color Color::WicOrange = Color(253,144,11,255);
+  const Color Color::WicOrange = Color(244,126,23,255);
   const Color Color::WicGray   = Color(63,63,63,255);
   Color::Color(uint8_t red, uint8_t green, uint8_t blue, uint8_t alpha)
   : red(red), green(green), blue(blue), alpha(alpha)

@@ -47,15 +47,37 @@ namespace wic
   }
   double Pair::norm() const 
   {
-    return std::sqrt(x*x+y*y);
+    return std::sqrt(normSquared());
   }
-  void Pair::transform(double rotation, Pair scale, Pair center)  
+  Pair Pair::normalized() const
+  {
+    return Pair(x,y) / norm();
+  }
+  Pair Pair::abs() const
+  {
+    return Pair(std::abs(x), std::abs(y));
+  }
+  double Pair::normSquared() const
+  {
+    return x*x+y*y;
+  }
+  double Pair::dot(const Pair& other) const
+  {
+    return x * other.x + y * other.y;
+  }
+  void Pair::transform(double rotation, Pair scale, Pair center)
   {
     double cosine = std::cos(rotation);
     double sine = std::sin(rotation);
     Pair tmp = (Pair(x,y) - center) * scale;
     x = center.x + tmp.x * cosine - tmp.y * sine;
     y = center.y + tmp.x * sine   + tmp.y * cosine;
+  }
+  void Pair::transform(Pair scale, Pair center)
+  {
+    Pair tmp = (Pair(x,y) - center) * scale;
+    x = center.x + tmp.x;
+    y = center.y + tmp.y;
   }
   Pair Pair::operator-() const
   {

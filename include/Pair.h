@@ -62,12 +62,27 @@ namespace wic
      *  \return the norm of the Pair
      */
     double norm() const;
+    /** Returns a normalized Pair. */
+    Pair normalized() const;
+    /** Returns a Pair with negative components made positive. */
+    Pair abs() const;
+    /** Returns the square of the norm. */
+    double normSquared() const;
+    /** Returns the dot product with another pair
+     *  \param other another Pair
+     */
+    double dot(const Pair& other) const;
     /** Transforms the pair based on a rotation, scale, and center.
      *  \param rotation the rotation
      *  \param scale the scale
      *  \param center the center to rotate and scale around
      */
     void transform(double rotation, Pair scale, Pair center);
+    /** Transforms the pair based on a scale and center.
+     *  \param scale the scale
+     *  \param center the center to rotate and scale around
+     */
+    void transform(Pair scale, Pair center);
     /** Defines unary negation.
      *  \return the component-wise negation of the pair
      */

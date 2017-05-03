@@ -22,6 +22,7 @@
 #ifndef STAGE_H
 #define STAGE_H
 #include <vector>
+#include <initializer_list>
 #include "Interfaces.h"
 #include "Camera.h"
 #include "Actor.h"
@@ -35,11 +36,11 @@ namespace wic
     /** Updates actors. This includes handing actions of singular actors and
      *  interactions between actors.
      */
-    virtual void updtActors() = 0;
+    virtual void updt() = 0;
     /** Draws actors.
      *  \param camera the camera through which to view
      */
-    virtual void drawActors(const Camera& camera) = 0;
+    virtual void draw(const Camera& camera) = 0;
   };
   
   /** Indicates that a Stage can contain actors of a certain type. 
@@ -61,7 +62,7 @@ namespace wic
     /** Updates actors and removes those marked for removal. This method 
      *  handles individual actions. 
      */
-    void updtAll()
+    void handle()
     {
       for(auto actor = actors.begin() ; actor != actors.end(); ++actor)
         actor->act();
@@ -73,6 +74,19 @@ namespace wic
   protected:
     vector<ActorClass> actors; /**< List of actors */
   };
-  
+  template <class ActorClass, class ActingOn> class ContainsInteracting
+  {
+  public:
+    void handle(vector<ActorClass> actors, vector<ActingOn> others)
+    {
+      for(auto actor = actors.begin(); actor != actors.end(); ++actor)
+      {
+        for(auto other = others.begin(); other != others.end(); ++other)
+        {
+          actor->actOn(*other);
+        }
+      }
+    }
+  };
 }
 #endif

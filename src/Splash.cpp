@@ -95,24 +95,24 @@ namespace wic
     {
       if(!stage)
       {
-        background.color.alpha += 3;
-        wic.color.alpha        += 3;
-        engine.color.alpha     += 3;
-        version.color.alpha    += 3;
+        background.color.alpha += 5;
+        wic.color.alpha        += 5;
+        engine.color.alpha     += 5;
+        version.color.alpha    += 5;
         if(version.color.alpha == 255)
         {
           time = getTime();
           stage++;
         }
       }
-      else if(stage == 1 && getTime() - time >= 1.0)
+      else if(stage == 1 && getTime() - time >= 0.5)
         stage++;
       else if(stage == 2)
       {
-        background.color.alpha -= 3;
-        wic.color.alpha        -= 3;
-        engine.color.alpha     -= 3;
-        version.color.alpha    -= 3;
+        background.color.alpha -= 5;
+        wic.color.alpha        -= 5;
+        engine.color.alpha     -= 5;
+        version.color.alpha    -= 5;
         if(!version.color.alpha)
           break;
       }
